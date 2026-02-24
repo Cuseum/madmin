@@ -2,12 +2,11 @@ name: Tests
 
 on:
   pull_request:
-    branches:
-      - '*'
   push:
     branches:
       - '**'
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   lint:
