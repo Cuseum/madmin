@@ -39,7 +39,8 @@ module Madmin
 
     def update
       if @record.update(resource_params)
-        if (tab = params[:tab].presence) && resource.form_tab_for(tab)
+        tab = params[:tab].presence
+        if tab && resource.form_tab_for(tab)
           redirect_to resource.tab_edit_path(@record, tab)
         else
           redirect_to resource.show_path(@record)
@@ -81,7 +82,8 @@ module Madmin
     end
 
     def resource_params
-      permitted = if (tab = params[:tab].presence) && resource.form_tab_for(tab)
+      tab = params[:tab].presence
+      permitted = if tab && resource.form_tab_for(tab)
         resource.tab_permitted_params(tab)
       else
         resource.permitted_params
