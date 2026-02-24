@@ -11,3 +11,4 @@ test/dummy/tmp/
 test/dummy/node_modules/
 .DS_Store
 .idea/
+vendor/bundle/

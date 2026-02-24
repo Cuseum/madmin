@@ -28,6 +28,11 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "show uses translated attribute name when no label option is provided" do
+    get madmin_user_path(users(:one))
+    assert_select "th.label", text: "Given Name"
+  end
+
   test "can see the users edit" do
     get edit_madmin_user_path(users(:one))
     assert_response :success
