@@ -31,3 +31,7 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      user:
+        first_name: "Given Name"
