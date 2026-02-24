@@ -1,5 +1,7 @@
 ### Unreleased
 
+- Use `human_attribute_name` for attribute labels in show view
+
 ### 2.3.2
 
 - Support plural module names #313
