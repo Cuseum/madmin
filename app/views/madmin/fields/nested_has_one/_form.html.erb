@@ -8,11 +8,11 @@
     {}
   ) do |nested_form| %>
     <% field.nested_attributes.each do |name, nested_attribute| %>
-      <% next if nested_attribute[:field].nil? %>
-      <% next unless nested_attribute[:field].visible?(action_name) %>
-      <% next unless nested_attribute[:field].visible?(:form) %>
+      <% next if nested_attribute.field.nil? %>
+      <% next unless nested_attribute.field.visible?(action_name) %>
+      <% next unless nested_attribute.field.visible?(:form) %>
 
-      <% nested_field = nested_attribute[:field] %>
+      <% nested_field = nested_attribute.field %>
 
       <div class="mb-4 flex">
         <%= render(
