@@ -88,3 +88,41 @@ select {
   padding: 1.25rem;
   margin-bottom: 1rem;
 }
+
+.form-tabs-layout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.form-tabs-nav {
+  flex-shrink: 0;
+  width: 12rem;
+  border-right: 1px solid var(--border-color);
+  padding-right: 1rem;
+
+  a {
+    border-radius: .375rem;
+    color: var(--text-color);
+    display: block;
+    font-weight: 500;
+    padding: 0.5rem;
+    text-decoration: none;
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+
+    &:hover {
+      background-color: rgb(243 244 246);
+    }
+
+    &.active {
+      background-color: rgb(243 244 246);
+      font-weight: 600;
+    }
+  }
+}
+
+.form-tab-content {
+  flex: 1;
+  min-width: 0;
+}

@@ -24,6 +24,17 @@ class UserResource < Madmin::Resource
   attribute :comments
   attribute :habtms
 
+  # Form tabs
+  form_tab :personal do
+    attribute :first_name
+    attribute :last_name
+  end
+
+  form_tab :settings do
+    attribute :language
+    attribute :notifications
+  end
+
   # Uncomment this to customize the display name of records in the admin area.
   def self.display_name(record)
     "#{record.first_name} #{record.last_name}"

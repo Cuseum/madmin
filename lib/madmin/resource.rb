@@ -1,6 +1,7 @@
 module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
+    FormTab = Data.define(:name, :label, :attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -9,18 +10,20 @@ module Madmin
     class_attribute :index_attributes, default: nil
     class_attribute :show_attributes, default: nil
     class_attribute :form_attributes, default: nil
+    class_attribute :form_tabs, default: []
 
     class << self
       def inherited(base)
         base.attributes = attributes.dup
         base.member_actions = scopes.dup
         base.scopes = scopes.dup
+        base.form_tabs = []
         super
       end
 
       def index(&block)
         self.index_attributes = []
-        Thread.current[:madmin_collecting_for] = [:index, self]
+        Thread.current[:madmin_collecting_for] = [:index, self, nil]
         block.call
       ensure
         Thread.current[:madmin_collecting_for] = nil
@@ -28,7 +31,7 @@ module Madmin
 
       def show(&block)
         self.show_attributes = []
-        Thread.current[:madmin_collecting_for] = [:show, self]
+        Thread.current[:madmin_collecting_for] = [:show, self, nil]
         block.call
       ensure
         Thread.current[:madmin_collecting_for] = nil
@@ -36,10 +39,37 @@ module Madmin
 
       def form(&block)
         self.form_attributes = []
-        Thread.current[:madmin_collecting_for] = [:form, self]
+        Thread.current[:madmin_collecting_for] = [:form, self, nil]
         block.call
       ensure
         Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def form_tab(name, label: name.to_s.humanize, &block)
+        tab_attribute_names = []
+        Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_attribute_names]
+        block.call
+        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: tab_attribute_names)]
+      ensure
+        Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def form_tab_for(name)
+        return nil if name.blank?
+        form_tabs.find { |t| t.name == name.to_sym }
+      end
+
+      def tab_edit_path(record, tab_name)
+        url_helpers.polymorphic_path([:madmin, route_namespace, becomes(record)], action: :edit, tab: tab_name)
+      end
+
+      def tab_permitted_params(tab_name)
+        tab = form_tab_for(tab_name)
+        return [] unless tab
+        tab.attribute_names.filter_map do |attr_name|
+          attr = attributes[attr_name]
+          attr&.field&.to_param
+        end
       end
 
       def model(value = nil)
@@ -97,7 +127,7 @@ module Madmin
           field: field.new(attribute_name: name, model: model, resource: self, options: config)
         )
 
-        collecting_for, collecting_resource = Thread.current[:madmin_collecting_for]
+        collecting_for, collecting_resource, tab_attribute_names = Thread.current[:madmin_collecting_for]
         if collecting_resource == self
           case collecting_for
           when :index
@@ -106,6 +136,8 @@ module Madmin
             show_attributes << name
           when :form
             form_attributes << name
+          when :form_tab
+            tab_attribute_names << name
           end
         end
       end

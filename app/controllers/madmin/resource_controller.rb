@@ -39,7 +39,12 @@ module Madmin
 
     def update
       if @record.update(resource_params)
-        redirect_to resource.show_path(@record)
+        tab = params[:tab].presence
+        if tab && resource.form_tab_for(tab)
+          redirect_to resource.tab_edit_path(@record, tab)
+        else
+          redirect_to resource.show_path(@record)
+        end
       else
         render :edit, status: :unprocessable_entity
       end
@@ -77,8 +82,14 @@ module Madmin
     end
 
     def resource_params
+      tab = params[:tab].presence
+      permitted = if tab && resource.form_tab_for(tab)
+        resource.tab_permitted_params(tab)
+      else
+        resource.permitted_params
+      end
       params.require(resource.param_key)
-        .permit(*resource.permitted_params)
+        .permit(*permitted)
         .transform_values { |v| change_polymorphic(v) }
     end
 
