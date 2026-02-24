@@ -6,6 +6,9 @@ module Madmin
     class_attribute :member_actions, default: []
     class_attribute :scopes, default: []
     class_attribute :menu_options, instance_reader: false
+    class_attribute :index_attributes, default: nil
+    class_attribute :show_attributes, default: nil
+    class_attribute :form_attributes, default: nil
 
     class << self
       def inherited(base)
@@ -13,6 +16,30 @@ module Madmin
         base.member_actions = scopes.dup
         base.scopes = scopes.dup
         super
+      end
+
+      def index(&block)
+        self.index_attributes = []
+        Thread.current[:madmin_collecting_for] = [:index, self]
+        block.call
+      ensure
+        Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def show(&block)
+        self.show_attributes = []
+        Thread.current[:madmin_collecting_for] = [:show, self]
+        block.call
+      ensure
+        Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def form(&block)
+        self.form_attributes = []
+        Thread.current[:madmin_collecting_for] = [:form, self]
+        block.call
+      ensure
+        Thread.current[:madmin_collecting_for] = nil
       end
 
       def model(value = nil)
@@ -69,6 +96,18 @@ module Madmin
           type: type,
           field: field.new(attribute_name: name, model: model, resource: self, options: config)
         )
+
+        collecting_for, collecting_resource = Thread.current[:madmin_collecting_for]
+        if collecting_resource == self
+          case collecting_for
+          when :index
+            index_attributes << name
+          when :show
+            show_attributes << name
+          when :form
+            form_attributes << name
+          end
+        end
       end
 
       # Returns singular name
