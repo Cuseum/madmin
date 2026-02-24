@@ -8,4 +8,17 @@
   </h1>
 </header>
 
-<%= render partial: "form", locals: { record: @record, resource: resource } %>
+<% if resource.form_tabs.any? %>
+  <div class="form-tabs-layout">
+    <%= render partial: "form_tabs_nav", locals: { record: @record, resource: resource } %>
+    <div class="form-tab-content">
+      <% if (current_tab = resource.form_tab_for(params[:tab])) %>
+        <%= render partial: "form_tab", locals: { record: @record, resource: resource, tab: current_tab } %>
+      <% else %>
+        <%= render partial: "form", locals: { record: @record, resource: resource } %>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <%= render partial: "form", locals: { record: @record, resource: resource } %>
+<% end %>

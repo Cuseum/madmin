@@ -9,6 +9,8 @@ module Madmin
         def copy_edit
           copy_resource_template("edit")
           copy_resource_template("_form")
+          copy_resource_template("_form_tabs_nav")
+          copy_resource_template("_form_tab")
         end
       end
     end

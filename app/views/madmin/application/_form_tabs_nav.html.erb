@@ -1,0 +1,5 @@
+<nav class="form-tabs-nav">
+  <% resource.form_tabs.each do |tab| %>
+    <%= nav_link_to tab.label, resource.tab_edit_path(record, tab.name) %>
+  <% end %>
+</nav>
