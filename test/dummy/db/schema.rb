@@ -87,7 +87,7 @@ ActiveRecord::Schema.define(version: 2025_08_18_152409) do
   end
 
   create_table "post_stats", force: :cascade do |t|
-    t.integer "post_id"
+    t.bigint "post_id"
     t.integer "drafts_saved"
     t.string "keywords"
     t.boolean "shared", default: false
