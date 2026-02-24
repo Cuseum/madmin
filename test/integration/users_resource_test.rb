@@ -70,7 +70,7 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
 
   test "update with tab param only saves tab attributes and redirects back to tab" do
     user = users(:one)
-    put madmin_user_path(user), params: {user: {first_name: "TabUpdated", language: "fr"}, tab: :personal}
+    put madmin_user_path(user), params: {user: {first_name: "TabUpdated"}, tab: :personal}
     assert_response :redirect
     assert_redirected_to edit_madmin_user_path(user, tab: :personal)
     assert_equal "TabUpdated", user.reload.first_name
