@@ -66,10 +66,10 @@ module Madmin
       def tab_permitted_params(tab_name)
         tab = form_tab_for(tab_name)
         return [] unless tab
-        tab.attribute_names.filter_map { |attr_name|
+        tab.attribute_names.filter_map do |attr_name|
           attr = attributes[attr_name]
           attr&.field&.to_param
-        }
+        end
       end
 
       def model(value = nil)
@@ -127,7 +127,7 @@ module Madmin
           field: field.new(attribute_name: name, model: model, resource: self, options: config)
         )
 
-        collecting_for, collecting_resource, extra = Thread.current[:madmin_collecting_for]
+        collecting_for, collecting_resource, tab_attribute_names = Thread.current[:madmin_collecting_for]
         if collecting_resource == self
           case collecting_for
           when :index
@@ -137,7 +137,7 @@ module Madmin
           when :form
             form_attributes << name
           when :form_tab
-            extra << name
+            tab_attribute_names << name
           end
         end
       end
