@@ -56,8 +56,23 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     get edit_madmin_user_path(users(:one))
     assert_response :success
     assert_select "nav.form-tabs-nav"
+    assert_select "nav.form-tabs-nav a", text: "General"
     assert_select "nav.form-tabs-nav a", text: "Personal"
     assert_select "nav.form-tabs-nav a", text: "Settings"
+  end
+
+  test "edit page General link is active when no tab param" do
+    get edit_madmin_user_path(users(:one))
+    assert_select "nav.form-tabs-nav a.active", text: "General"
+    assert_select "nav.form-tabs-nav a:not(.active)", text: "Personal"
+    assert_select "nav.form-tabs-nav a:not(.active)", text: "Settings"
+  end
+
+  test "edit page active tab link matches current tab param" do
+    get edit_madmin_user_path(users(:one), tab: :personal)
+    assert_select "nav.form-tabs-nav a.active", text: "Personal"
+    assert_select "nav.form-tabs-nav a:not(.active)", text: "General"
+    assert_select "nav.form-tabs-nav a:not(.active)", text: "Settings"
   end
 
   test "edit page with tab param renders tab-specific form" do

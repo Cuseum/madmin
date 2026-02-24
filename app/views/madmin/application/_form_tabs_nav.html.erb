@@ -1,5 +1,6 @@
 <nav class="form-tabs-nav">
+  <%= link_to "General", resource.edit_path(record), class: ("active" if params[:tab].blank?) %>
   <% resource.form_tabs.each do |tab| %>
-    <%= nav_link_to tab.label, resource.tab_edit_path(record, tab.name) %>
+    <%= link_to tab.label, resource.tab_edit_path(record, tab.name), class: ("active" if params[:tab].to_s == tab.name.to_s) %>
   <% end %>
 </nav>
