@@ -1,13 +1,21 @@
 class <%= class_name %>Resource < Madmin::Resource
-  # Attributes
-<% model_attributes.each do |attribute_name| -%>
-  attribute :<%= attribute_name %><%= formatted_options_for_attribute(attribute_name) %>
+  index do
+<% (model_attributes + associations).reject { |name| options_for_attribute(name)&.fetch(:index, nil) == false }.each do |attribute_name| -%>
+    attribute :<%= attribute_name %>
 <% end -%>
+  end
 
-  # Associations
-<% associations.each do |association_name| -%>
-  attribute :<%= association_name %>
+  show do
+<% (model_attributes + associations).reject { |name| options_for_attribute(name)&.fetch(:show, nil) == false }.each do |attribute_name| -%>
+    attribute :<%= attribute_name %>
 <% end -%>
+  end
+
+  form do
+<% (model_attributes + associations).reject { |name| options_for_attribute(name)&.fetch(:form, nil) == false }.each do |attribute_name| -%>
+    attribute :<%= attribute_name %>
+<% end -%>
+  end
 
   # Add scopes to easily filter records
   # scope :published

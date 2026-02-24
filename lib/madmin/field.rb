@@ -32,6 +32,18 @@ module Madmin
     # Used for checking visibility of attribute on an view
     def visible?(action)
       action = action.to_sym
+
+      context_attrs = case action
+      when :index
+        resource.index_attributes
+      when :show
+        resource.show_attributes
+      when :new, :edit, :create, :update, :form
+        resource.form_attributes
+      end
+
+      return context_attrs.include?(attribute_name) unless context_attrs.nil?
+
       options.fetch(action) do
         case action
         when :index
