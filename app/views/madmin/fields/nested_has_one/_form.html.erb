@@ -26,10 +26,12 @@
       )%>
     </div>
   <% end %>
-  <div class="form-group">
-    <%= nested_form.label :_destroy %>
-    <div class="form-input">
-      <%= nested_form.check_box :_destroy %>
+  <% if field.destroy? %>
+    <div class="form-group">
+      <%= nested_form.label :_destroy %>
+      <div class="form-input">
+        <%= nested_form.check_box :_destroy %>
+      </div>
     </div>
-  </div>
+  <% end %>
 <% end %>

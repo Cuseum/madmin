@@ -27,6 +27,10 @@ module Madmin
       def skipped_fields
         options[:skip] || []
       end
+
+      def destroy?
+        options.fetch(:destroy, true)
+      end
     end
   end
 end
