@@ -12,6 +12,15 @@
   <% end %>
 
   <% if resource.form_sections.any? %>
+    <% sectioned_attr_names = resource.form_sections.flat_map(&:attribute_names).to_set %>
+    <% resource.attributes.values.select { _1.field.present? && _1.field.visible?(action_name) && !sectioned_attr_names.include?(_1.name) }.each do |attribute| %>
+      <div class="form-group">
+        <%= render "madmin/shared/label", form: form, field: attribute.field %>
+        <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
+        <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
+        <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
+      </div>
+    <% end %>
     <% resource.form_sections.each do |form_section| %>
       <%= render partial: "form_section", locals: { form_section: form_section, record: record, form: form, resource: resource } %>
     <% end %>

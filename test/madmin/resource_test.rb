@@ -38,13 +38,27 @@ end
 class FormSectionResource < Madmin::Resource
   model User
 
-  section :general do
-    attribute :first_name
-    attribute :last_name
-  end
+  form do
+    section :general do
+      attribute :first_name
+      attribute :last_name
+    end
 
-  section :contact, label: "Contact Info" do
-    attribute :email
+    section :contact, label: "Contact Info" do
+      attribute :email
+    end
+  end
+end
+
+class MixedFormResource < Madmin::Resource
+  model User
+
+  form do
+    attribute :id
+    section :details do
+      attribute :first_name
+      attribute :last_name
+    end
   end
 end
 
@@ -151,6 +165,25 @@ class ResourceTest < ActiveSupport::TestCase
     contact_section = FormSectionResource.form_sections.find { |s| s.name == :contact }
     assert_includes contact_section.attribute_names, :email
     refute_includes contact_section.attribute_names, :first_name
+  end
+
+  test "section inside form makes attributes visible in form context" do
+    assert FormSectionResource.attributes[:first_name].field.visible?(:form)
+    assert FormSectionResource.attributes[:last_name].field.visible?(:form)
+    assert FormSectionResource.attributes[:email].field.visible?(:form)
+  end
+
+  test "section inside form makes attributes visible for new and edit actions" do
+    assert FormSectionResource.attributes[:first_name].field.visible?(:new)
+    assert FormSectionResource.attributes[:first_name].field.visible?(:edit)
+    assert FormSectionResource.attributes[:email].field.visible?(:new)
+  end
+
+  test "section inside form restores form context for subsequent attributes" do
+    assert_equal 1, MixedFormResource.form_sections.length
+    assert_includes MixedFormResource.form_attributes, :id
+    assert_includes MixedFormResource.form_attributes, :first_name
+    assert_includes MixedFormResource.form_attributes, :last_name
   end
 
   test "form_sections are not inherited" do

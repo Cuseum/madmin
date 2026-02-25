@@ -63,12 +63,16 @@ module Madmin
       end
 
       def section(name, label: name.to_s.humanize, &block)
+        previous_context = Thread.current[:madmin_collecting_for]
         section_attribute_names = []
         Thread.current[:madmin_collecting_for] = [:form_section, self, section_attribute_names]
         block.call
         self.form_sections = form_sections + [FormSection.new(name: name.to_sym, label: label, attribute_names: section_attribute_names)]
+        if previous_context&.first == :form && previous_context[1] == self
+          form_attributes.concat(section_attribute_names)
+        end
       ensure
-        Thread.current[:madmin_collecting_for] = nil
+        Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def tab_edit_path(record, tab_name)
