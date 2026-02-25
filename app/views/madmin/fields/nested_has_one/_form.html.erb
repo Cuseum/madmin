@@ -15,6 +15,7 @@
       <% nested_field = nested_attribute.field %>
 
       <div class="mb-4 flex">
+        <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
         <%= render(
           partial: nested_field.to_partial_path("form"),
           locals: {
