@@ -62,4 +62,20 @@ class NestedHasOneTest < ActiveSupport::TestCase
     )
     refute field.destroy?
   end
+
+  test "nested_attributes respects form_attributes order when form block is defined" do
+    field = PostResource.attributes[:post_stat].field
+
+    # Without form_attributes, order follows resource.attributes
+    attrs_without_form = field.nested_attributes.keys
+    assert_equal :drafts_saved, attrs_without_form.find { |n| [:drafts_saved, :keywords].include?(n) }
+
+    # With form_attributes defining keywords before drafts_saved
+    PostStatResource.form_attributes = [:keywords, :drafts_saved]
+
+    attrs_with_form = field.nested_attributes.keys
+    assert_equal [:keywords, :drafts_saved], attrs_with_form.select { |n| [:keywords, :drafts_saved].include?(n) }
+  ensure
+    PostStatResource.form_attributes = nil
+  end
 end
