@@ -18,6 +18,10 @@ module Madmin
         attribute_name.to_s.singularize.classify.constantize
       end
 
+      def destroy?
+        options.fetch(:destroy, true)
+      end
+
       private
 
       def permitted_fields
@@ -26,10 +30,6 @@ module Madmin
 
       def skipped_fields
         options[:skip] || []
-      end
-
-      def destroy?
-        options.fetch(:destroy, true)
       end
     end
   end
