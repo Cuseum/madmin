@@ -35,6 +35,19 @@ class FormTabResource < Madmin::Resource
   end
 end
 
+class FormSectionResource < Madmin::Resource
+  model User
+
+  section :general do
+    attribute :first_name
+    attribute :last_name
+  end
+
+  section :contact, label: "Contact Info" do
+    attribute :email
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "searchable_attributes" do
     searchable_attribute_names = UserResource.searchable_attributes.map(&:name)
@@ -119,5 +132,29 @@ class ResourceTest < ActiveSupport::TestCase
   test "form_tabs are not inherited" do
     subclass = Class.new(FormTabResource)
     assert_equal [], subclass.form_tabs
+  end
+
+  test "section registers sections" do
+    assert_equal 2, FormSectionResource.form_sections.length
+    assert_equal :general, FormSectionResource.form_sections.first.name
+    assert_equal "General", FormSectionResource.form_sections.first.label
+    assert_equal :contact, FormSectionResource.form_sections.last.name
+    assert_equal "Contact Info", FormSectionResource.form_sections.last.label
+  end
+
+  test "section collects attribute names" do
+    general_section = FormSectionResource.form_sections.find { |s| s.name == :general }
+    assert_includes general_section.attribute_names, :first_name
+    assert_includes general_section.attribute_names, :last_name
+    refute_includes general_section.attribute_names, :email
+
+    contact_section = FormSectionResource.form_sections.find { |s| s.name == :contact }
+    assert_includes contact_section.attribute_names, :email
+    refute_includes contact_section.attribute_names, :first_name
+  end
+
+  test "form_sections are not inherited" do
+    subclass = Class.new(FormSectionResource)
+    assert_equal [], subclass.form_sections
   end
 end

@@ -2,6 +2,7 @@ module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
     FormTab = Data.define(:name, :label, :attribute_names)
+    FormSection = Data.define(:name, :label, :attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -11,6 +12,7 @@ module Madmin
     class_attribute :show_attributes, default: nil
     class_attribute :form_attributes, default: nil
     class_attribute :form_tabs, default: []
+    class_attribute :form_sections, default: []
 
     class << self
       def inherited(base)
@@ -18,6 +20,7 @@ module Madmin
         base.member_actions = scopes.dup
         base.scopes = scopes.dup
         base.form_tabs = []
+        base.form_sections = []
         super
       end
 
@@ -57,6 +60,15 @@ module Madmin
       def form_tab_for(name)
         return nil if name.blank?
         form_tabs.find { |t| t.name == name.to_sym }
+      end
+
+      def section(name, label: name.to_s.humanize, &block)
+        section_attribute_names = []
+        Thread.current[:madmin_collecting_for] = [:form_section, self, section_attribute_names]
+        block.call
+        self.form_sections = form_sections + [FormSection.new(name: name.to_sym, label: label, attribute_names: section_attribute_names)]
+      ensure
+        Thread.current[:madmin_collecting_for] = nil
       end
 
       def tab_edit_path(record, tab_name)
@@ -137,6 +149,8 @@ module Madmin
           when :form
             form_attributes << name
           when :form_tab
+            tab_attribute_names << name
+          when :form_section
             tab_attribute_names << name
           end
         end
