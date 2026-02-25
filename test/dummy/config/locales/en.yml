@@ -35,3 +35,6 @@ en:
     attributes:
       user:
         first_name: "Given Name"
+    hints:
+      user:
+        first_name: "Enter your given name"
