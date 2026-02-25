@@ -2,10 +2,12 @@
 
 one:
   title: MyString
+  user: one
   comments_count: 1
-  metadata: 
+  metadata:
 
 two:
   title: MyString1
+  user: one
   comments_count: 1
-  metadata: 
+  metadata:
