@@ -8,6 +8,7 @@
     <div class="form-group">
       <%= render "madmin/shared/label", form: f, field: nested_field %>
       <%= render partial: nested_field.to_partial_path("form"), locals: { field: nested_field, record: f.object, form: f, resource: field.resource } %>
+      <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
     </div>
   <% end %>
 

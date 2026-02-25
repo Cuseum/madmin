@@ -11,6 +11,11 @@ class Madmin::FieldTest < ActiveSupport::TestCase
     assert_nil UserResource.attributes[:created_at].field.hint
   end
 
+  test "hint for nested has_one attribute" do
+    nested_field = PostResource.attributes[:post_stat].field.nested_attributes[:drafts_saved].field
+    assert_equal "Number of times the draft was saved", nested_field.hint
+  end
+
   test "searchable?" do
     assert UserResource.attributes[:first_name].field.searchable?
     refute UserResource.attributes[:created_at].field.searchable?

@@ -21,6 +21,7 @@
           resource: field.resource
         }
       )%>
+      <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
     </div>
   <% end %>
   <% if field.destroy? %>
