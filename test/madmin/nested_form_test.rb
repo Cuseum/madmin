@@ -53,12 +53,12 @@ class NestedHasOneTest < ActiveSupport::TestCase
     assert field.destroy?
   end
 
-  test "destroy? returns false when destroy: false is set" do
+  test "destroy? returns false when allow_destroy: false is set" do
     field = Madmin::Fields::NestedHasOne.new(
       attribute_name: :post_stat,
       model: Post,
       resource: PostResource,
-      options: ActiveSupport::OrderedOptions.new.merge(destroy: false)
+      options: ActiveSupport::OrderedOptions.new.merge(allow_destroy: false)
     )
     refute field.destroy?
   end

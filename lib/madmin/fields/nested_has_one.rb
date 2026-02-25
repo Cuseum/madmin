@@ -19,7 +19,7 @@ module Madmin
       end
 
       def destroy?
-        options.fetch(:destroy, true)
+        options.fetch(:allow_destroy, true)
       end
 
       private
