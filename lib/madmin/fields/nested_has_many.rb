@@ -3,7 +3,10 @@ module Madmin
     class NestedHasMany < HasMany
       DEFAULT_ATTRIBUTES = %w[_destroy id].freeze
       def nested_attributes
-        resource.attributes.except(*skipped_fields)
+        attrs = resource.attributes.except(*skipped_fields)
+        return attrs if resource.form_attributes.nil?
+
+        resource.form_attributes.filter_map { |name| [name, attrs[name]] if attrs.key?(name) }.to_h
       end
 
       def resource

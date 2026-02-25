@@ -58,6 +58,10 @@ module Madmin
       [model.primary_key.to_sym, :avatar, :title, :name, :user, :created_at]
     end
 
+    def hint
+      I18n.t("activerecord.hints.#{model.model_name.i18n_key}.#{attribute_name}", default: nil)
+    end
+
     def required?
       model.validators_on(attribute_name).any? { |v| v.is_a? ActiveModel::Validations::PresenceValidator }
     end
