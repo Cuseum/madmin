@@ -7,6 +7,8 @@ class Post < ApplicationRecord
   has_many_attached :attachments
   has_one_attached :image
   has_rich_text :body
+  has_one :post_stat, dependent: :destroy
+  accepts_nested_attributes_for :post_stat, allow_destroy: true
 
   scope :recent, -> { where(created_at: 2.weeks.ago..) }
 

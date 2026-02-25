@@ -1,0 +1,34 @@
+<%= form.fields_for(
+  field.attribute_name,
+  form.object.public_send(field.attribute_name) || field.to_model.new,
+  {}
+) do |nested_form| %>
+  <% field.nested_attributes.each do |name, nested_attribute| %>
+    <% next if nested_attribute.field.nil? %>
+    <% next unless nested_attribute.field.visible?(action_name) %>
+    <% next unless nested_attribute.field.visible?(:form) %>
+
+    <% nested_field = nested_attribute.field %>
+
+    <div class="form-group">
+      <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
+      <%= render(
+        partial: nested_field.to_partial_path("form"),
+        locals: {
+          field: nested_field,
+          record: nested_form.object,
+          form: nested_form,
+          resource: field.resource
+        }
+      )%>
+    </div>
+  <% end %>
+  <% if field.destroy? %>
+    <div class="form-group">
+      <%= nested_form.label :_destroy %>
+      <div class="form-input">
+        <%= nested_form.check_box :_destroy %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

@@ -25,3 +25,41 @@ class NestedHasManyTest < ActiveSupport::TestCase
     assert expected_params.all? { |p| field.to_param[:posts_attributes].include?(p) }
   end
 end
+
+class NestedHasOneTest < ActiveSupport::TestCase
+  test "checks for the right field class" do
+    field = PostResource.attributes[:post_stat].field
+
+    assert field.instance_of?(Madmin::Fields::NestedHasOne)
+    assert_equal PostStatResource, field.resource
+  end
+
+  test "skips fields which are skipped in configuration" do
+    field = PostResource.attributes[:post_stat].field
+
+    # :shared is in skip: %I[shared]
+    refute field.to_param.values.flatten.include?(:shared)
+    assert field.to_param.values.flatten.include?(:drafts_saved)
+  end
+
+  test "whitelists unskipped and required params" do
+    field = PostResource.attributes[:post_stat].field
+    expected_params = [:drafts_saved, :keywords, "_destroy", "id"]
+    assert expected_params.all? { |p| field.to_param[:post_stat_attributes].include?(p) }
+  end
+
+  test "destroy? defaults to true" do
+    field = PostResource.attributes[:post_stat].field
+    assert field.destroy?
+  end
+
+  test "destroy? returns false when allow_destroy: false is set" do
+    field = Madmin::Fields::NestedHasOne.new(
+      attribute_name: :post_stat,
+      model: Post,
+      resource: PostResource,
+      options: ActiveSupport::OrderedOptions.new.merge(allow_destroy: false)
+    )
+    refute field.destroy?
+  end
+end
