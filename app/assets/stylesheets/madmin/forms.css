@@ -3,8 +3,9 @@
 }
 
 .form-hint {
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
+  color: var(--light-text-color);
+  font-size: 0.675rem;
+  margin-top: 0.2rem;
 }
 
 .form-group {
