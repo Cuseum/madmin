@@ -27,9 +27,9 @@
     </div>
   <% end %>
   <div class="form-group">
-    <div class="block md:inline-block md:w-32 flex-shrink-0 text-red-500">
-      <%= nested_form.label :_destroy %>
+    <%= nested_form.label :_destroy %>
+    <div class="form-input">
+      <%= nested_form.check_box :_destroy %>
     </div>
-    <%= nested_form.check_box :_destroy, class: "form-checkbox text-red-600 checked:ring-red-600 focus:ring-red-600" %>
   </div>
 <% end %>
