@@ -2,6 +2,7 @@ module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
     FormTab = Data.define(:name, :label, :attribute_names)
+    FormSection = Data.define(:name, :label, :attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -11,6 +12,8 @@ module Madmin
     class_attribute :show_attributes, default: nil
     class_attribute :form_attributes, default: nil
     class_attribute :form_tabs, default: []
+    class_attribute :form_sections, default: []
+    class_attribute :form_items, default: []
 
     class << self
       def inherited(base)
@@ -18,6 +21,8 @@ module Madmin
         base.member_actions = scopes.dup
         base.scopes = scopes.dup
         base.form_tabs = []
+        base.form_sections = []
+        base.form_items = []
         super
       end
 
@@ -39,10 +44,26 @@ module Madmin
 
       def form(&block)
         self.form_attributes = []
+        self.form_items = []
         Thread.current[:madmin_collecting_for] = [:form, self, nil]
         block.call
       ensure
         Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def section(name, label: name.to_s.humanize, &block)
+        previous_context = Thread.current[:madmin_collecting_for]
+        section_attribute_names = []
+        Thread.current[:madmin_collecting_for] = [:form_section, self, section_attribute_names]
+        block.call
+        fs = FormSection.new(name: name.to_sym, label: label, attribute_names: section_attribute_names)
+        self.form_sections = form_sections + [fs]
+        if previous_context&.first == :form && previous_context[1] == self
+          form_attributes.concat(section_attribute_names)
+          self.form_items = form_items + [fs]
+        end
+      ensure
+        Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def form_tab(name, label: name.to_s.humanize, &block)
@@ -127,7 +148,7 @@ module Madmin
           field: field.new(attribute_name: name, model: model, resource: self, options: config)
         )
 
-        collecting_for, collecting_resource, tab_attribute_names = Thread.current[:madmin_collecting_for]
+        collecting_for, collecting_resource, container_attribute_names = Thread.current[:madmin_collecting_for]
         if collecting_resource == self
           case collecting_for
           when :index
@@ -136,8 +157,11 @@ module Madmin
             show_attributes << name
           when :form
             form_attributes << name
+            form_items << name
           when :form_tab
-            tab_attribute_names << name
+            container_attribute_names << name
+          when :form_section
+            container_attribute_names << name
           end
         end
       end
