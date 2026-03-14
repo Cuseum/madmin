@@ -50,6 +50,21 @@ class FormSectionResource < Madmin::Resource
   end
 end
 
+class FormSectionWithDescriptionResource < Madmin::Resource
+  model User
+
+  form do
+    section :general, description: "Basic information" do
+      attribute :first_name
+      attribute :last_name
+    end
+
+    section :contact, label: "Contact Info", description: -> { "Current time: #{Time.current.year}" } do
+      attribute :email
+    end
+  end
+end
+
 class MixedFormResource < Madmin::Resource
   model User
 
@@ -168,6 +183,21 @@ class ResourceTest < ActiveSupport::TestCase
     assert_equal "General", FormSectionResource.form_sections.first.label
     assert_equal :contact, FormSectionResource.form_sections.last.name
     assert_equal "Contact Info", FormSectionResource.form_sections.last.label
+  end
+
+  test "section description defaults to nil" do
+    assert_nil FormSectionResource.form_sections.first.description
+  end
+
+  test "section accepts a string description" do
+    general_section = FormSectionWithDescriptionResource.form_sections.find { |s| s.name == :general }
+    assert_equal "Basic information", general_section.description
+  end
+
+  test "section accepts a callable description for dynamic content" do
+    contact_section = FormSectionWithDescriptionResource.form_sections.find { |s| s.name == :contact }
+    assert_respond_to contact_section.description, :call
+    assert_includes contact_section.description.call, Time.current.year.to_s
   end
 
   test "section collects attribute names" do
