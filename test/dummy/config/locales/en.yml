@@ -38,5 +38,6 @@ en:
     hints:
       user:
         first_name: "Enter your given name"
+        last_name: "Your <strong>family</strong> name"
       post_stat:
         drafts_saved: "Number of times the draft was saved"

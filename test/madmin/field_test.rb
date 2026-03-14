@@ -11,6 +11,12 @@ class Madmin::FieldTest < ActiveSupport::TestCase
     assert_nil UserResource.attributes[:created_at].field.hint
   end
 
+  test "hint with html" do
+    hint = UserResource.attributes[:last_name].field.hint
+    assert_equal "Your <strong>family</strong> name", hint
+    assert_predicate hint, :html_safe?
+  end
+
   test "hint for nested has_one attribute" do
     nested_field = PostResource.attributes[:post_stat].field.nested_attributes[:drafts_saved].field
     assert_equal "Number of times the draft was saved", nested_field.hint
