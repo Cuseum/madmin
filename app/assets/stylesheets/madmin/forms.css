@@ -128,13 +128,6 @@ select {
   min-width: 0;
 }
 
-.form-section {
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
 .form-section-title {
   font-size: 1rem;
   font-weight: 600;
