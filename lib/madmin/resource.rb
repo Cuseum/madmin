@@ -58,10 +58,8 @@ module Madmin
         block.call
         fs = FormSection.new(name: name.to_sym, label: label, attribute_names: section_attribute_names)
         self.form_sections = form_sections + [fs]
-        in_form_block = previous_context&.first == :form && previous_context[1] == self
-        if in_form_block || previous_context.nil?
-          self.form_attributes ||= []
-          self.form_attributes.concat(section_attribute_names)
+        if previous_context&.first == :form && previous_context[1] == self
+          form_attributes.concat(section_attribute_names)
           self.form_items = form_items + [fs]
         end
       ensure
