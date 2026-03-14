@@ -31,7 +31,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_18_152409) do
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
-    t.integer "blob_id", null: false
+    t.bigint "blob_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.string "name", null: false
     t.integer "record_id", null: false
@@ -53,7 +53,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_18_152409) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.integer "blob_id", null: false
+    t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end

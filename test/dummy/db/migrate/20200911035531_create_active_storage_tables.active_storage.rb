@@ -17,7 +17,7 @@ class CreateActiveStorageTables < ActiveRecord::Migration[5.2]
     create_table :active_storage_attachments do |t|
       t.string     :name,     null: false
       t.references :record,   null: false, polymorphic: true, index: false
-      t.references :blob,     null: false
+      t.references :blob,     null: false, type: :bigint
 
       t.datetime :created_at, null: false
 
@@ -26,7 +26,7 @@ class CreateActiveStorageTables < ActiveRecord::Migration[5.2]
     end
 
     create_table :active_storage_variant_records do |t|
-      t.belongs_to :blob, null: false, index: false
+      t.belongs_to :blob, null: false, index: false, type: :bigint
       t.string :variation_digest, null: false
 
       t.index %i[ blob_id variation_digest ], name: "index_active_storage_variant_records_uniqueness", unique: true
