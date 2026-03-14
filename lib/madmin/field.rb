@@ -59,7 +59,9 @@ module Madmin
     end
 
     def hint
-      I18n.t("activerecord.hints.#{model.model_name.i18n_key}.#{attribute_name}", default: nil)
+      # Hints are sourced from developer-controlled i18n locale files, so marking
+      # them as html_safe allows HTML markup (links, bold text, etc.) in hints.
+      I18n.t("activerecord.hints.#{model.model_name.i18n_key}.#{attribute_name}", default: nil)&.html_safe
     end
 
     def required?
