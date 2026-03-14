@@ -106,5 +106,4 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     assert_select "h3.form-section-title", text: "Name"
     assert_select "input[name='user[first_name]']"
   end
-
 end
