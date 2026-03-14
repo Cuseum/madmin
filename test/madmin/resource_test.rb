@@ -63,6 +63,19 @@ class MixedFormResource < Madmin::Resource
   end
 end
 
+class TopLevelSectionResource < Madmin::Resource
+  model User
+
+  section :general do
+    attribute :first_name
+    attribute :last_name
+  end
+
+  section :contact, label: "Contact Info" do
+    attribute :email
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "searchable_attributes" do
     searchable_attribute_names = UserResource.searchable_attributes.map(&:name)
@@ -202,5 +215,33 @@ class ResourceTest < ActiveSupport::TestCase
     assert_equal :email, items.first
     assert_kind_of Madmin::Resource::FormSection, items.last
     assert_equal :details, items.last.name
+  end
+
+  test "section at class level populates form_items" do
+    assert_equal 2, TopLevelSectionResource.form_items.length
+    assert_kind_of Madmin::Resource::FormSection, TopLevelSectionResource.form_items.first
+    assert_equal :general, TopLevelSectionResource.form_items.first.name
+    assert_kind_of Madmin::Resource::FormSection, TopLevelSectionResource.form_items.last
+    assert_equal :contact, TopLevelSectionResource.form_items.last.name
+  end
+
+  test "section at class level initializes form_attributes" do
+    assert_equal [:first_name, :last_name, :email], TopLevelSectionResource.form_attributes
+  end
+
+  test "section at class level makes attributes visible in form context" do
+    assert TopLevelSectionResource.attributes[:first_name].field.visible?(:form)
+    assert TopLevelSectionResource.attributes[:last_name].field.visible?(:form)
+    assert TopLevelSectionResource.attributes[:email].field.visible?(:form)
+  end
+
+  test "form_sections are not inherited when section used at class level" do
+    subclass = Class.new(TopLevelSectionResource)
+    assert_equal [], subclass.form_sections
+  end
+
+  test "form_items are not inherited when section used at class level" do
+    subclass = Class.new(TopLevelSectionResource)
+    assert_equal [], subclass.form_items
   end
 end

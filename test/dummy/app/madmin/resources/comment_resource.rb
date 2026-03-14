@@ -1,13 +1,18 @@
 class CommentResource < Madmin::Resource
   # Attributes
   attribute :id, form: false
-  attribute :body
   attribute :created_at, form: false
   attribute :updated_at, form: false
 
-  # Associations
-  attribute :user
-  attribute :commentable, collection: -> { Post.all }
+  # Form sections (defined at class level, without a form block)
+  section :content do
+    attribute :body
+  end
+
+  section :associations, label: "Associations" do
+    attribute :user
+    attribute :commentable, collection: -> { Post.all }
+  end
 
   # Uncomment this to customize the display name of records in the admin area.
   # def self.display_name(record)
