@@ -97,7 +97,7 @@ class HiddenMenuResource < Madmin::Resource
 end
 
 class ResourceTest < ActiveSupport::TestCase
-  test "menu hidden: true hides resource from menu" do
+  test "menu_options returns false when menu hidden: true" do
     assert_equal false, HiddenMenuResource.menu_options
   end
 
