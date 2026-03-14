@@ -91,7 +91,16 @@ class FormTabWithSectionResource < Madmin::Resource
   end
 end
 
+class HiddenMenuResource < Madmin::Resource
+  model User
+  menu hidden: true
+end
+
 class ResourceTest < ActiveSupport::TestCase
+  test "menu_options returns false when menu hidden: true" do
+    assert_equal false, HiddenMenuResource.menu_options
+  end
+
   test "searchable_attributes" do
     searchable_attribute_names = UserResource.searchable_attributes.map(&:name)
     assert_includes searchable_attribute_names, :first_name
