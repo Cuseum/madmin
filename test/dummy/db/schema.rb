@@ -64,7 +64,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_18_152409) do
     t.string "commentable_type", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
@@ -90,7 +90,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_18_152409) do
     t.datetime "created_at", null: false
     t.integer "drafts_saved"
     t.string "keywords"
-    t.integer "post_id"
+    t.bigint "post_id"
     t.boolean "shared", default: false
     t.datetime "updated_at", null: false
     t.index ["post_id"], name: "index_post_stats_on_post_id"
@@ -111,7 +111,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_08_18_152409) do
     t.datetime "created_at", null: false
     t.string "service"
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_user_connected_accounts_on_user_id"
   end
 
