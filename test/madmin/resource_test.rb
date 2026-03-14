@@ -63,6 +63,19 @@ class MixedFormResource < Madmin::Resource
   end
 end
 
+class FormTabWithSectionResource < Madmin::Resource
+  model User
+
+  form_tab :details do
+    section :personal do
+      attribute :first_name
+      attribute :last_name
+    end
+
+    attribute :email
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "searchable_attributes" do
     searchable_attribute_names = UserResource.searchable_attributes.map(&:name)
@@ -202,5 +215,48 @@ class ResourceTest < ActiveSupport::TestCase
     assert_equal :email, items.first
     assert_kind_of Madmin::Resource::FormSection, items.last
     assert_equal :details, items.last.name
+  end
+
+  test "form_tab with section registers section in form_sections" do
+    assert_equal 1, FormTabWithSectionResource.form_sections.length
+    assert_equal :personal, FormTabWithSectionResource.form_sections.first.name
+  end
+
+  test "form_tab with section collects flat attribute_names including section attributes" do
+    tab = FormTabWithSectionResource.form_tab_for(:details)
+    assert_includes tab.attribute_names, :first_name
+    assert_includes tab.attribute_names, :last_name
+    assert_includes tab.attribute_names, :email
+  end
+
+  test "form_tab with section stores FormSection in tab_items" do
+    tab = FormTabWithSectionResource.form_tab_for(:details)
+    assert_equal 2, tab.tab_items.length
+    assert_kind_of Madmin::Resource::FormSection, tab.tab_items.first
+    assert_equal :personal, tab.tab_items.first.name
+    assert_equal :email, tab.tab_items.last
+  end
+
+  test "form_tab with section tab_items preserves definition order" do
+    resource = Class.new(Madmin::Resource) do
+      model User
+      form_tab :mixed do
+        attribute :email
+        section :name do
+          attribute :first_name
+        end
+      end
+    end
+    tab = resource.form_tab_for(:mixed)
+    assert_equal 2, tab.tab_items.length
+    assert_equal :email, tab.tab_items.first
+    assert_kind_of Madmin::Resource::FormSection, tab.tab_items.last
+  end
+
+  test "tab_permitted_params includes attributes from sections inside form_tab" do
+    permitted = FormTabWithSectionResource.tab_permitted_params(:details)
+    assert_includes permitted, :first_name
+    assert_includes permitted, :last_name
+    assert_includes permitted, :email
   end
 end

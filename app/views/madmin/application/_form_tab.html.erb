@@ -11,15 +11,19 @@
     </div>
   <% end %>
 
-  <% tab.attribute_names.each do |attr_name| %>
-    <% attribute = resource.attributes[attr_name] %>
-    <% next if attribute.nil? || attribute.field.nil? %>
-    <div class="form-group">
-      <%= render "madmin/shared/label", form: form, field: attribute.field %>
-      <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
-      <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
-      <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
-    </div>
+  <% tab.tab_items.each do |item| %>
+    <% if item.is_a?(Symbol) %>
+      <% attribute = resource.attributes[item] %>
+      <% next if attribute.nil? || attribute.field.nil? %>
+      <div class="form-group">
+        <%= render "madmin/shared/label", form: form, field: attribute.field %>
+        <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
+        <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
+        <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
+      </div>
+    <% else %>
+      <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
+    <% end %>
   <% end %>
 
   <%= hidden_field_tag :tab, tab.name %>
