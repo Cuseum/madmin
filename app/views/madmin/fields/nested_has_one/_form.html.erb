@@ -3,26 +3,55 @@
   form.object.public_send(field.attribute_name) || field.to_model.new,
   {}
 ) do |nested_form| %>
-  <% field.nested_attributes.each do |name, nested_attribute| %>
-    <% next if nested_attribute.field.nil? %>
-    <% next unless nested_attribute.field.visible?(action_name) %>
-    <% next unless nested_attribute.field.visible?(:form) %>
+  <% if field.resource.form_items.any? %>
+    <% field.resource.form_items.each do |item| %>
+      <% if item.is_a?(Symbol) %>
+        <% nested_attribute = field.nested_attributes[item] %>
+        <% next if nested_attribute.nil? || nested_attribute.field.nil? %>
+        <% next unless nested_attribute.field.visible?(action_name) %>
+        <% next unless nested_attribute.field.visible?(:form) %>
 
-    <% nested_field = nested_attribute.field %>
+        <% nested_field = nested_attribute.field %>
 
-    <div class="form-group">
-      <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
-      <%= render(
-        partial: nested_field.to_partial_path("form"),
-        locals: {
-          field: nested_field,
-          record: nested_form.object,
-          form: nested_form,
-          resource: field.resource
-        }
-      )%>
-      <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
-    </div>
+        <div class="form-group">
+          <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
+          <%= render(
+            partial: nested_field.to_partial_path("form"),
+            locals: {
+              field: nested_field,
+              record: nested_form.object,
+              form: nested_form,
+              resource: field.resource
+            }
+          ) %>
+          <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
+        </div>
+      <% else %>
+        <%= render partial: "madmin/application/form_section", locals: { form_section: item, record: nested_form.object, form: nested_form, resource: field.resource } %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <% field.nested_attributes.each do |name, nested_attribute| %>
+      <% next if nested_attribute.field.nil? %>
+      <% next unless nested_attribute.field.visible?(action_name) %>
+      <% next unless nested_attribute.field.visible?(:form) %>
+
+      <% nested_field = nested_attribute.field %>
+
+      <div class="form-group">
+        <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
+        <%= render(
+          partial: nested_field.to_partial_path("form"),
+          locals: {
+            field: nested_field,
+            record: nested_form.object,
+            form: nested_form,
+            resource: field.resource
+          }
+        ) %>
+        <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
+      </div>
+    <% end %>
   <% end %>
   <% if field.destroy? %>
     <div class="form-group">

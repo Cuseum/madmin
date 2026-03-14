@@ -10,6 +10,13 @@ class PostStatResource < Madmin::Resource
   # Associations
   attribute :post
 
+  form do
+    section :statistics do
+      attribute :drafts_saved
+      attribute :keywords
+    end
+  end
+
   # Uncomment this to customize the display name of records in the admin area.
   # def self.display_name(record)
   #   record.name

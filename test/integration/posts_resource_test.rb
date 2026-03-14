@@ -63,4 +63,13 @@ class PostsResourceTest < ActionDispatch::IntegrationTest
     assert_response :redirect
     assert_nil PostStat.find_by(id: stat.id)
   end
+
+  test "edit page renders sections from nested resource form definition" do
+    get edit_madmin_post_path(posts(:one))
+    assert_response :success
+    assert_select "div.form-section", count: 1
+    assert_select "h3.form-section-title", text: "Statistics"
+    assert_select "input[name='post[post_stat_attributes][drafts_saved]']"
+    assert_select "input[name='post[post_stat_attributes][keywords]']"
+  end
 end
