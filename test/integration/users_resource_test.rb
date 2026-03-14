@@ -98,4 +98,13 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     assert_redirected_to madmin_user_path(user)
     assert_equal "FallbackUpdated", user.reload.first_name
   end
+
+  test "edit page with tab param renders sections inside tab" do
+    get edit_madmin_user_path(users(:one), tab: :personal)
+    assert_response :success
+    assert_select "div.form-section", count: 1
+    assert_select "h3.form-section-title", text: "Name"
+    assert_select "input[name='user[first_name]']"
+  end
+
 end

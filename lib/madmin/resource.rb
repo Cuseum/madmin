@@ -1,7 +1,7 @@
 module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
-    FormTab = Data.define(:name, :label, :attribute_names)
+    FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
     FormSection = Data.define(:name, :label, :attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
@@ -61,16 +61,19 @@ module Madmin
         if previous_context&.first == :form && previous_context[1] == self
           form_attributes.concat(section_attribute_names)
           self.form_items = form_items + [fs]
+        elsif previous_context&.first == :form_tab && previous_context[1] == self
+          previous_context[2] << fs
         end
       ensure
         Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def form_tab(name, label: name.to_s.humanize, &block)
-        tab_attribute_names = []
-        Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_attribute_names]
+        tab_items = []
+        Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_items]
         block.call
-        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: tab_attribute_names)]
+        attribute_names = tab_items.flat_map { |item| item.is_a?(FormSection) ? item.attribute_names : [item] }
+        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end

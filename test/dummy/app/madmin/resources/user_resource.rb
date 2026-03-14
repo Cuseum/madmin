@@ -26,8 +26,10 @@ class UserResource < Madmin::Resource
 
   # Form tabs
   form_tab :personal do
-    attribute :first_name
-    attribute :last_name
+    section :name do
+      attribute :first_name
+      attribute :last_name
+    end
   end
 
   form_tab :settings do
