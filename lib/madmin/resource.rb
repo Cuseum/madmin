@@ -356,6 +356,7 @@ module Madmin
       def menu_options
         return false if @menu_options == false
         @menu_options ||= {}
+        return false if @menu_options[:hidden]
         @menu_options.with_defaults(label: friendly_name.pluralize, url: index_path)
       end
     end
