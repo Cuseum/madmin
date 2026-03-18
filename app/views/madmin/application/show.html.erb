@@ -25,7 +25,9 @@
 
       <tr>
         <th class="label">
-          <%= attribute.field.options.label || resource.model.human_attribute_name(attribute.name) %>
+          <% unless attribute.field.label_hidden? %>
+            <%= attribute.field.options.label || resource.model.human_attribute_name(attribute.name) %>
+          <% end %>
         </th>
 
         <td>

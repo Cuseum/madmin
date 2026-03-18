@@ -1,4 +1,6 @@
-<%= form.label field.attribute_name, field.options.label %>
-<% if field.required? %>
-  <span class="required">*</span>
+<% unless field.label_hidden? %>
+  <%= form.label field.attribute_name, field.options.label %>
+  <% if field.required? %>
+    <span class="required">*</span>
+  <% end %>
 <% end %>

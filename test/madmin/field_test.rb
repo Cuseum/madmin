@@ -1,6 +1,11 @@
 require "test_helper"
 
 class Madmin::FieldTest < ActiveSupport::TestCase
+  test "label_hidden?" do
+    assert UserResource.attributes[:ssn].field.label_hidden?
+    refute UserResource.attributes[:first_name].field.label_hidden?
+  end
+
   test "required?" do
     assert PostResource.attributes[:title].field.required?
     refute PostResource.attributes[:id].field.required?
