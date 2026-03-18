@@ -64,6 +64,10 @@ module Madmin
       I18n.t("activerecord.hints.#{model.model_name.i18n_key}.#{attribute_name}", default: nil)&.html_safe
     end
 
+    def label_hidden?
+      options.key?(:label) && options[:label].nil?
+    end
+
     def required?
       model.validators_on(attribute_name).any? { |v| v.is_a? ActiveModel::Validations::PresenceValidator }
     end
