@@ -2,7 +2,15 @@ module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
     FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
-    FormSection = Data.define(:name, :label, :description, :attribute_names)
+    FormSection = Data.define(:name, :label, :description, :section_items) do
+      def attribute_names
+        section_items.flat_map do |item|
+          item.is_a?(Madmin::Resource::FormRow) ? item.cols.flat_map(&:attribute_names) : [item]
+        end
+      end
+    end
+    FormRow = Data.define(:cols)
+    FormCol = Data.define(:attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -53,13 +61,13 @@ module Madmin
 
       def section(name, label: name.to_s.humanize, description: nil, &block)
         previous_context = Thread.current[:madmin_collecting_for]
-        section_attribute_names = []
-        Thread.current[:madmin_collecting_for] = [:form_section, self, section_attribute_names]
+        section_items = []
+        Thread.current[:madmin_collecting_for] = [:form_section, self, section_items]
         block.call
-        fs = FormSection.new(name: name.to_sym, label: label, description: description, attribute_names: section_attribute_names)
+        fs = FormSection.new(name: name.to_sym, label: label, description: description, section_items: section_items)
         self.form_sections = form_sections + [fs]
         if previous_context&.first == :form && previous_context[1] == self
-          form_attributes.concat(section_attribute_names)
+          form_attributes.concat(fs.attribute_names)
           self.form_items = form_items + [fs]
         elsif previous_context&.first == :form_tab && previous_context[1] == self
           previous_context[2] << fs
@@ -72,10 +80,41 @@ module Madmin
         tab_items = []
         Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_items]
         block.call
-        attribute_names = tab_items.flat_map { |item| item.is_a?(FormSection) ? item.attribute_names : [item] }
+        attribute_names = flatten_to_attribute_names(tab_items)
         self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def row(&block)
+        previous_context = Thread.current[:madmin_collecting_for]
+        row_cols = []
+        Thread.current[:madmin_collecting_for] = [:form_row, self, row_cols]
+        block.call
+        fr = FormRow.new(cols: row_cols)
+        if previous_context&.first == :form && previous_context[1] == self
+          row_cols.each { |col| form_attributes.concat(col.attribute_names) }
+          self.form_items = form_items + [fr]
+        elsif previous_context&.first == :form_tab && previous_context[1] == self
+          previous_context[2] << fr
+        elsif previous_context&.first == :form_section && previous_context[1] == self
+          previous_context[2] << fr
+        end
+      ensure
+        Thread.current[:madmin_collecting_for] = previous_context
+      end
+
+      def col(&block)
+        previous_context = Thread.current[:madmin_collecting_for]
+        col_attribute_names = []
+        Thread.current[:madmin_collecting_for] = [:form_col, self, col_attribute_names]
+        block.call
+        fc = FormCol.new(attribute_names: col_attribute_names)
+        if previous_context&.first == :form_row && previous_context[1] == self
+          previous_context[2] << fc
+        end
+      ensure
+        Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def form_tab_for(name)
@@ -164,6 +203,8 @@ module Madmin
           when :form_tab
             container_attribute_names << name
           when :form_section
+            container_attribute_names << name
+          when :form_col
             container_attribute_names << name
           end
         end
@@ -358,6 +399,20 @@ module Madmin
         @menu_options ||= {}
         return false if @menu_options[:hidden]
         @menu_options.with_defaults(label: friendly_name.pluralize, url: index_path)
+      end
+
+      private
+
+      def flatten_to_attribute_names(items)
+        items.flat_map do |item|
+          if item.is_a?(FormSection)
+            item.attribute_names
+          elsif item.is_a?(FormRow)
+            item.cols.flat_map(&:attribute_names)
+          else
+            [item]
+          end
+        end
       end
     end
   end

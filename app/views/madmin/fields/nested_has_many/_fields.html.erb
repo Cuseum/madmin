@@ -9,11 +9,9 @@
 
         <% nested_field = nested_attribute.field %>
 
-        <div class="form-group">
-          <%= render "madmin/shared/label", form: f, field: nested_field %>
-          <%= render partial: nested_field.to_partial_path("form"), locals: { field: nested_field, record: f.object, form: f, resource: field.resource } %>
-          <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
-        </div>
+        <%= render "madmin/shared/form_field", field: nested_field, record: f.object, form: f, resource: field.resource %>
+      <% elsif item.is_a?(Madmin::Resource::FormRow) %>
+        <%= render partial: "madmin/application/form_row", locals: { form_row: item, record: f.object, form: f, resource: field.resource } %>
       <% else %>
         <%= render partial: "madmin/application/form_section", locals: { form_section: item, record: f.object, form: f, resource: field.resource } %>
       <% end %>
@@ -25,11 +23,7 @@
       <% next unless nested_field.visible?(action_name) %>
       <% next unless nested_field.visible?(:form) %>
 
-      <div class="form-group">
-        <%= render "madmin/shared/label", form: f, field: nested_field %>
-        <%= render partial: nested_field.to_partial_path("form"), locals: { field: nested_field, record: f.object, form: f, resource: field.resource } %>
-        <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
-      </div>
+      <%= render "madmin/shared/form_field", field: nested_field, record: f.object, form: f, resource: field.resource %>
     <% end %>
   <% end %>
 
