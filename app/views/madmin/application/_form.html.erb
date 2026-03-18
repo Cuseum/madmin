@@ -16,12 +16,7 @@
       <% if item.is_a?(Symbol) %>
         <% attribute = resource.attributes[item] %>
         <% next unless attribute&.field&.present? && attribute.field.visible?(action_name) %>
-        <div class="form-group">
-          <%= render "madmin/shared/label", form: form, field: attribute.field %>
-          <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
-          <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
-          <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
-        </div>
+        <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
       <% elsif item.is_a?(Madmin::Resource::FormRow) %>
         <%= render partial: "form_row", locals: { form_row: item, record: record, form: form, resource: resource } %>
       <% else %>
@@ -30,12 +25,7 @@
     <% end %>
   <% else %>
     <% resource.attributes.values.select{ _1.field.present? && _1.field.visible?(action_name) }.each do |attribute| %>
-      <div class="form-group">
-        <%= render "madmin/shared/label", form: form, field: attribute.field %>
-        <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
-        <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
-        <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
-      </div>
+      <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
     <% end %>
   <% end %>
 

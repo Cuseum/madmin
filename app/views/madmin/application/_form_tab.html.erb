@@ -15,12 +15,7 @@
     <% if item.is_a?(Symbol) %>
       <% attribute = resource.attributes[item] %>
       <% next if attribute.nil? || attribute.field.nil? %>
-      <div class="form-group">
-        <%= render "madmin/shared/label", form: form, field: attribute.field %>
-        <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
-        <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
-        <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
-      </div>
+      <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
     <% else %>
       <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
     <% end %>

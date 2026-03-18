@@ -13,19 +13,7 @@
 
         <% nested_field = nested_attribute.field %>
 
-        <div class="form-group">
-          <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
-          <%= render(
-            partial: nested_field.to_partial_path("form"),
-            locals: {
-              field: nested_field,
-              record: nested_form.object,
-              form: nested_form,
-              resource: field.resource
-            }
-          ) %>
-          <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
-        </div>
+        <%= render "madmin/shared/form_field", field: nested_field, record: nested_form.object, form: nested_form, resource: field.resource %>
       <% else %>
         <%= render partial: "madmin/application/form_section", locals: { form_section: item, record: nested_form.object, form: nested_form, resource: field.resource } %>
       <% end %>
@@ -38,19 +26,7 @@
 
       <% nested_field = nested_attribute.field %>
 
-      <div class="form-group">
-        <%= render "madmin/shared/label", form: nested_form, field: nested_field %>
-        <%= render(
-          partial: nested_field.to_partial_path("form"),
-          locals: {
-            field: nested_field,
-            record: nested_form.object,
-            form: nested_form,
-            resource: field.resource
-          }
-        ) %>
-        <%= tag.div nested_field.hint, class: "form-hint" if nested_field.hint.present? %>
-      </div>
+      <%= render "madmin/shared/form_field", field: nested_field, record: nested_form.object, form: nested_form, resource: field.resource %>
     <% end %>
   <% end %>
   <% if field.destroy? %>
