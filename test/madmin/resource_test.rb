@@ -109,6 +109,19 @@ class FormRowResource < Madmin::Resource
   end
 end
 
+class FormTabWithRowResource < Madmin::Resource
+  model User
+
+  form_tab :details do
+    attribute :email
+
+    row do
+      col { attribute :first_name }
+      col { attribute :last_name }
+    end
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "menu_options returns false when menu hidden: true" do
     assert_equal false, HiddenMenuResource.menu_options
@@ -343,5 +356,32 @@ class ResourceTest < ActiveSupport::TestCase
     assert_includes permitted, :first_name
     assert_includes permitted, :last_name
     assert_includes permitted, :email
+  end
+
+  test "row inside form_tab creates a FormRow in tab_items" do
+    tab = FormTabWithRowResource.form_tab_for(:details)
+    assert_equal 2, tab.tab_items.length
+    assert_equal :email, tab.tab_items.first
+    assert_kind_of Madmin::Resource::FormRow, tab.tab_items.last
+  end
+
+  test "row inside form_tab contains the correct number of cols" do
+    tab = FormTabWithRowResource.form_tab_for(:details)
+    row = tab.tab_items.last
+    assert_equal 2, row.cols.size
+  end
+
+  test "row inside form_tab collects flat attribute_names including col attributes" do
+    tab = FormTabWithRowResource.form_tab_for(:details)
+    assert_includes tab.attribute_names, :email
+    assert_includes tab.attribute_names, :first_name
+    assert_includes tab.attribute_names, :last_name
+  end
+
+  test "row inside form_tab attributes are included in tab_permitted_params" do
+    permitted = FormTabWithRowResource.tab_permitted_params(:details)
+    assert_includes permitted, :email
+    assert_includes permitted, :first_name
+    assert_includes permitted, :last_name
   end
 end

@@ -16,6 +16,8 @@
       <% attribute = resource.attributes[item] %>
       <% next if attribute.nil? || attribute.field.nil? %>
       <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
+    <% elsif item.is_a?(Madmin::Resource::FormRow) %>
+      <%= render partial: "form_row", locals: { form_row: item, record: record, form: form, resource: resource } %>
     <% else %>
       <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
     <% end %>

@@ -74,7 +74,15 @@ module Madmin
         tab_items = []
         Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_items]
         block.call
-        attribute_names = tab_items.flat_map { |item| item.is_a?(FormSection) ? item.attribute_names : [item] }
+        attribute_names = tab_items.flat_map do |item|
+          if item.is_a?(FormSection)
+            item.attribute_names
+          elsif item.is_a?(FormRow)
+            item.cols.flat_map(&:attribute_names)
+          else
+            [item]
+          end
+        end
         self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
@@ -89,6 +97,8 @@ module Madmin
         if previous_context&.first == :form && previous_context[1] == self
           row_cols.each { |col| form_attributes.concat(col.attribute_names) }
           self.form_items = form_items + [fr]
+        elsif previous_context&.first == :form_tab && previous_context[1] == self
+          previous_context[2] << fr
         end
       ensure
         Thread.current[:madmin_collecting_for] = previous_context
