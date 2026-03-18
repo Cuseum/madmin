@@ -122,6 +122,21 @@ class FormTabWithRowResource < Madmin::Resource
   end
 end
 
+class FormSectionWithRowResource < Madmin::Resource
+  model User
+
+  form do
+    section :details do
+      attribute :email
+
+      row do
+        col { attribute :first_name }
+        col { attribute :last_name }
+      end
+    end
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "menu_options returns false when menu hidden: true" do
     assert_equal false, HiddenMenuResource.menu_options
@@ -380,6 +395,33 @@ class ResourceTest < ActiveSupport::TestCase
 
   test "row inside form_tab attributes are included in tab_permitted_params" do
     permitted = FormTabWithRowResource.tab_permitted_params(:details)
+    assert_includes permitted, :email
+    assert_includes permitted, :first_name
+    assert_includes permitted, :last_name
+  end
+
+  test "row inside section creates a FormRow in section_items" do
+    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
+    assert_equal 2, section.section_items.length
+    assert_equal :email, section.section_items.first
+    assert_kind_of Madmin::Resource::FormRow, section.section_items.last
+  end
+
+  test "row inside section contains the correct number of cols" do
+    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
+    row = section.section_items.last
+    assert_equal 2, row.cols.size
+  end
+
+  test "row inside section collects flat attribute_names including col attributes" do
+    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
+    assert_includes section.attribute_names, :email
+    assert_includes section.attribute_names, :first_name
+    assert_includes section.attribute_names, :last_name
+  end
+
+  test "row inside section attributes are included in permitted_params" do
+    permitted = FormSectionWithRowResource.permitted_params
     assert_includes permitted, :email
     assert_includes permitted, :first_name
     assert_includes permitted, :last_name
