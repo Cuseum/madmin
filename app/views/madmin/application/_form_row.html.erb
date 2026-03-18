@@ -1,0 +1,16 @@
+<div class="form-row" style="--madmin-cols: <%= form_row.cols.size %>">
+  <% form_row.cols.each do |col| %>
+    <div class="form-col">
+      <% col.attribute_names.each do |attr_name| %>
+        <% attribute = resource.attributes[attr_name] %>
+        <% next if attribute.nil? || attribute.field.nil? || !attribute.field.visible?(action_name) %>
+        <div class="form-group">
+          <%= render "madmin/shared/label", form: form, field: attribute.field %>
+          <%= render partial: attribute.field.to_partial_path("form"), locals: { field: attribute.field, record: record, form: form, resource: resource } %>
+          <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
+          <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

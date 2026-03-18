@@ -135,3 +135,14 @@ select {
   margin-bottom: 1rem;
   color: var(--text-color);
 }
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(var(--madmin-cols, 1), 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-col {
+  min-width: 0;
+}

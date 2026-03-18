@@ -96,6 +96,19 @@ class HiddenMenuResource < Madmin::Resource
   menu hidden: true
 end
 
+class FormRowResource < Madmin::Resource
+  model User
+
+  form do
+    attribute :email
+
+    row do
+      col { attribute :first_name }
+      col { attribute :last_name }
+    end
+  end
+end
+
 class ResourceTest < ActiveSupport::TestCase
   test "menu_options returns false when menu hidden: true" do
     assert_equal false, HiddenMenuResource.menu_options
@@ -294,6 +307,39 @@ class ResourceTest < ActiveSupport::TestCase
 
   test "tab_permitted_params includes attributes from sections inside form_tab" do
     permitted = FormTabWithSectionResource.tab_permitted_params(:details)
+    assert_includes permitted, :first_name
+    assert_includes permitted, :last_name
+    assert_includes permitted, :email
+  end
+
+  test "row creates a FormRow in form_items" do
+    items = FormRowResource.form_items
+    assert_equal 2, items.length
+    assert_equal :email, items.first
+    assert_kind_of Madmin::Resource::FormRow, items.last
+  end
+
+  test "row contains the correct number of cols" do
+    row = FormRowResource.form_items.last
+    assert_equal 2, row.cols.size
+  end
+
+  test "col collects attribute names" do
+    row = FormRowResource.form_items.last
+    assert_kind_of Madmin::Resource::FormCol, row.cols.first
+    assert_includes row.cols.first.attribute_names, :first_name
+    assert_kind_of Madmin::Resource::FormCol, row.cols.last
+    assert_includes row.cols.last.attribute_names, :last_name
+  end
+
+  test "row makes attributes visible in form context" do
+    assert FormRowResource.attributes[:first_name].field.visible?(:form)
+    assert FormRowResource.attributes[:last_name].field.visible?(:form)
+    assert FormRowResource.attributes[:email].field.visible?(:form)
+  end
+
+  test "row attributes are included in permitted_params" do
+    permitted = FormRowResource.permitted_params
     assert_includes permitted, :first_name
     assert_includes permitted, :last_name
     assert_includes permitted, :email

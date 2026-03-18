@@ -3,6 +3,8 @@ module Madmin
     Attribute = Data.define(:name, :type, :field)
     FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
     FormSection = Data.define(:name, :label, :description, :attribute_names)
+    FormRow = Data.define(:cols)
+    FormCol = Data.define(:attribute_names)
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -76,6 +78,33 @@ module Madmin
         self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
+      end
+
+      def row(&block)
+        previous_context = Thread.current[:madmin_collecting_for]
+        row_cols = []
+        Thread.current[:madmin_collecting_for] = [:form_row, self, row_cols]
+        block.call
+        fr = FormRow.new(cols: row_cols)
+        if previous_context&.first == :form && previous_context[1] == self
+          row_cols.each { |col| form_attributes.concat(col.attribute_names) }
+          self.form_items = form_items + [fr]
+        end
+      ensure
+        Thread.current[:madmin_collecting_for] = previous_context
+      end
+
+      def col(&block)
+        previous_context = Thread.current[:madmin_collecting_for]
+        col_attribute_names = []
+        Thread.current[:madmin_collecting_for] = [:form_col, self, col_attribute_names]
+        block.call
+        fc = FormCol.new(attribute_names: col_attribute_names)
+        if previous_context&.first == :form_row && previous_context[1] == self
+          previous_context[2] << fc
+        end
+      ensure
+        Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def form_tab_for(name)
@@ -164,6 +193,8 @@ module Madmin
           when :form_tab
             container_attribute_names << name
           when :form_section
+            container_attribute_names << name
+          when :form_col
             container_attribute_names << name
           end
         end

@@ -22,6 +22,8 @@
           <%= tag.div attribute.field.options.description, class: "form-description" if attribute.field.options.description.present? %>
           <%= tag.div attribute.field.hint, class: "form-hint" if attribute.field.hint.present? %>
         </div>
+      <% elsif item.is_a?(Madmin::Resource::FormRow) %>
+        <%= render partial: "form_row", locals: { form_row: item, record: record, form: form, resource: resource } %>
       <% else %>
         <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
       <% end %>
