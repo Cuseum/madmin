@@ -18,11 +18,11 @@ module Madmin
     # `col { attribute :first_name }` render the corresponding form field partial
     # at Arbre render time.
     def render_arbre(block, assigns = {})
-      resource    = assigns[:resource]
-      form        = assigns[:form]
-      record      = assigns[:record]
+      resource = assigns[:resource]
+      form = assigns[:form]
+      record = assigns[:record]
       view_action = assigns.fetch(:action_name) { action_name }.to_s
-      view        = self
+      view = self
 
       ctx = Arbre::Context.new(assigns, self)
 

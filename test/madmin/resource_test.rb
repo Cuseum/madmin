@@ -298,7 +298,6 @@ class ResourceTest < ActiveSupport::TestCase
     assert_includes permitted, :last_name
     assert_includes permitted, :email
   end
-
 end
 
 class ArbreIndexResource < Madmin::Resource
