@@ -12,6 +12,51 @@ module Madmin
     FormRow = Data.define(:cols)
     FormCol = Data.define(:attribute_names)
 
+    # A proxy object used when evaluating index/show/form blocks at class definition
+    # time. It delegates known DSL methods (attribute, section, row, col) to the
+    # resource class and silently captures any arbre-style HTML element calls
+    # (h1, p, div, etc.) so they can be rendered later via Arbre::Context.
+    class BlockProxy
+      def initialize(resource_class)
+        @resource_class = resource_class
+        @uses_arbre = false
+      end
+
+      def uses_arbre?
+        @uses_arbre
+      end
+
+      def attribute(...)
+        @resource_class.attribute(...)
+      end
+
+      def section(...)
+        @resource_class.section(...)
+      end
+
+      def row(...)
+        @resource_class.row(...)
+      end
+
+      def col(...)
+        @resource_class.col(...)
+      end
+
+      # Intentionally intercepts all unknown method calls (arbre HTML elements like
+      # h1, p, div, etc.) without calling super. The BlockProxy is a purpose-built
+      # proxy whose entire job is to detect and silently absorb arbre-style calls
+      # during class definition time so the raw block can later be rendered by
+      # Arbre::Context in views. Calling super here would raise NoMethodError, which
+      # is undesirable.
+      def method_missing(_method_name, *_args, **_kwargs)
+        @uses_arbre = true
+      end
+
+      def respond_to_missing?(_method_name, _include_private = false)
+        true
+      end
+    end
+
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
     class_attribute :scopes, default: []
@@ -22,6 +67,9 @@ module Madmin
     class_attribute :form_tabs, default: []
     class_attribute :form_sections, default: []
     class_attribute :form_items, default: []
+    class_attribute :index_block, default: nil
+    class_attribute :show_block, default: nil
+    class_attribute :form_block, default: nil
 
     class << self
       def inherited(base)
@@ -31,21 +79,30 @@ module Madmin
         base.form_tabs = []
         base.form_sections = []
         base.form_items = []
+        base.index_block = nil
+        base.show_block = nil
+        base.form_block = nil
         super
       end
 
       def index(&block)
         self.index_attributes = []
+        self.index_block = nil
         Thread.current[:madmin_collecting_for] = [:index, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.index_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end
 
       def show(&block)
         self.show_attributes = []
+        self.show_block = nil
         Thread.current[:madmin_collecting_for] = [:show, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.show_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end
@@ -53,8 +110,11 @@ module Madmin
       def form(&block)
         self.form_attributes = []
         self.form_items = []
+        self.form_block = nil
         Thread.current[:madmin_collecting_for] = [:form, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.form_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end

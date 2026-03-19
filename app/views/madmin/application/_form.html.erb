@@ -11,7 +11,9 @@
     </div>
   <% end %>
 
-  <% if resource.form_items.any? %>
+  <% if resource.form_block %>
+    <%= render_arbre resource.form_block %>
+  <% elsif resource.form_items.any? %>
     <% resource.form_items.each do |item| %>
       <% if item.is_a?(Symbol) %>
         <% attribute = resource.attributes[item] %>

@@ -427,3 +427,88 @@ class ResourceTest < ActiveSupport::TestCase
     assert_includes permitted, :last_name
   end
 end
+
+class ArbreIndexResource < Madmin::Resource
+  model User
+
+  index do
+    h1 { "Users" }
+  end
+end
+
+class ArbreShowResource < Madmin::Resource
+  model User
+
+  show do
+    p { "User details" }
+  end
+end
+
+class ArbreFormResource < Madmin::Resource
+  model User
+
+  form do
+    div do
+      p { "Custom form content" }
+    end
+  end
+end
+
+class ArbreResourceTest < ActiveSupport::TestCase
+  test "arbre index block is stored" do
+    assert_not_nil ArbreIndexResource.index_block
+  end
+
+  test "arbre index block is a Proc" do
+    assert_kind_of Proc, ArbreIndexResource.index_block
+  end
+
+  test "arbre show block is stored" do
+    assert_not_nil ArbreShowResource.show_block
+  end
+
+  test "arbre show block is a Proc" do
+    assert_kind_of Proc, ArbreShowResource.show_block
+  end
+
+  test "arbre form block is stored" do
+    assert_not_nil ArbreFormResource.form_block
+  end
+
+  test "arbre form block is a Proc" do
+    assert_kind_of Proc, ArbreFormResource.form_block
+  end
+
+  test "attribute-style index block does not store an arbre block" do
+    assert_nil BlockStyleResource.index_block
+  end
+
+  test "attribute-style show block does not store an arbre block" do
+    assert_nil BlockStyleResource.show_block
+  end
+
+  test "attribute-style form block does not store an arbre block" do
+    assert_nil BlockStyleResource.form_block
+  end
+
+  test "arbre index block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreIndexResource.index_block).to_s
+    assert_includes html, "<h1>Users</h1>"
+  end
+
+  test "arbre show block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreShowResource.show_block).to_s
+    assert_includes html, "<p>User details</p>"
+  end
+
+  test "arbre form block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreFormResource.form_block).to_s
+    assert_includes html, "<div>"
+    assert_includes html, "<p>Custom form content</p>"
+  end
+
+  test "arbre blocks are not inherited" do
+    subclass = Class.new(ArbreIndexResource)
+    assert_nil subclass.index_block
+  end
+end

@@ -12,6 +12,7 @@ gemspec
 # your gem to rubygems.org.
 
 gem "appraisal"
+gem "arbre"
 gem "bcrypt"
 gem "ffaker", "~> 2.17"
 gem "friendly_id", "~> 5.4"
