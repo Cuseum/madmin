@@ -1,3 +1,4 @@
+require "arbre"
 require "importmap-rails"
 
 module Madmin
