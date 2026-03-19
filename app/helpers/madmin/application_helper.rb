@@ -24,7 +24,7 @@ module Madmin
       view_action = assigns.fetch(:action_name) { action_name }.to_s
       view = self
 
-      ctx = Arbre::Context.new(assigns, self)
+      ctx = ::Arbre::Context.new(assigns, self)
 
       # Make `attribute` callable inside Arbre blocks so that field-rendering
       # calls like `col { attribute :first_name }` work. The block is yielded
