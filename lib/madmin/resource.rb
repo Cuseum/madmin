@@ -1,8 +1,10 @@
 module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
-    FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
+    FormTab = Data.define(:name, :label, :attribute_names, :tab_items, :tab_block)
     FormSection = Data.define(:name, :label, :description, :section_items) do
+      # section_items is always an array of attribute name symbols; row/col
+      # nesting is handled by Arbre at render time, not by this data struct.
       def attribute_names
         section_items
       end
@@ -151,9 +153,11 @@ module Madmin
       def form_tab(name, label: name.to_s.humanize, &block)
         tab_items = []
         Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_items]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        tab_block = proxy.uses_arbre? ? block : nil
         attribute_names = flatten_to_attribute_names(tab_items)
-        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
+        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items, tab_block: tab_block)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end

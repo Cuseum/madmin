@@ -327,6 +327,31 @@ class ArbreFormResource < Madmin::Resource
   end
 end
 
+class ArbreFormTabResource < Madmin::Resource
+  model User
+
+  form_tab :details do
+    row do
+      col { attribute :first_name }
+      col { attribute :last_name }
+    end
+  end
+
+  form_tab :contact do
+    attribute :email
+  end
+end
+
+# Separate resource with pure Arbre HTML (no `attribute` inside Arbre elements)
+# used to test tab_block HTML rendering in isolation.
+class ArbreFormTabHtmlResource < Madmin::Resource
+  model User
+
+  form_tab :layout do
+    h2 { "Details Tab" }
+  end
+end
+
 class ArbreResourceTest < ActiveSupport::TestCase
   test "arbre index block is stored" do
     assert_not_nil ArbreIndexResource.index_block
@@ -383,5 +408,39 @@ class ArbreResourceTest < ActiveSupport::TestCase
   test "arbre blocks are not inherited" do
     subclass = Class.new(ArbreIndexResource)
     assert_nil subclass.index_block
+  end
+
+  test "form_tab with arbre content stores tab_block" do
+    tab = ArbreFormTabResource.form_tab_for(:details)
+    assert_not_nil tab.tab_block
+    assert_kind_of Proc, tab.tab_block
+  end
+
+  test "form_tab without arbre content has nil tab_block" do
+    tab = ArbreFormTabResource.form_tab_for(:contact)
+    assert_nil tab.tab_block
+  end
+
+  test "form_tab with arbre block registers attribute visibility" do
+    assert ArbreFormTabResource.attributes[:first_name].field.visible?(:form)
+    assert ArbreFormTabResource.attributes[:last_name].field.visible?(:form)
+  end
+
+  test "form_tab with arbre block is included in attribute_names for permitted params" do
+    permitted = ArbreFormTabResource.tab_permitted_params(:details)
+    assert_includes permitted, :first_name
+    assert_includes permitted, :last_name
+  end
+
+  test "form_tab arbre block is stored for pure html tab" do
+    tab = ArbreFormTabHtmlResource.form_tab_for(:layout)
+    assert_not_nil tab.tab_block
+    assert_kind_of Proc, tab.tab_block
+  end
+
+  test "form_tab arbre block renders correct html" do
+    tab = ArbreFormTabHtmlResource.form_tab_for(:layout)
+    html = Arbre::Context.new({}, nil, &tab.tab_block).to_s
+    assert_includes html, "<h2>Details Tab</h2>"
   end
 end

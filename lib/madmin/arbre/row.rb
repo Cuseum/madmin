@@ -10,8 +10,8 @@ module Madmin
     class Row < ::Arbre::Component
       builder_method :row
 
-      def build(*_args, **_kwargs, &block)
-        div(class: "form-row", &block)
+      def build(*_args, **_kwargs)
+        add_class "form-row"
       end
     end
   end
