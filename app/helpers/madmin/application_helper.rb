@@ -31,7 +31,7 @@ module Madmin
       # by Arbre's builder mechanism with `self` = context and `current_arbre_element`
       # pointing at the enclosing component (e.g. the Col div), so the rendered
       # field HTML is appended to the correct place in the tree.
-      ctx.define_singleton_method(:attribute) do |attr_name, **_opts|
+      ctx.define_singleton_method(:attribute) do |attr_name, *_args, **_opts|
         next unless resource
         attr = resource.attributes[attr_name]
         next unless attr&.field&.present? && attr.field.visible?(view_action)
