@@ -15,12 +15,5 @@ module Madmin
     def render_arbre(block, assigns = {})
       Arbre::Context.new(assigns, self, &block).to_s.html_safe
     end
-
-    # Renders a Madmin::Resource::FormRow using the Arbre FormRow/FormCol components.
-    # Replaces the old _form_row.html.erb partial.
-    def render_form_row(form_row, form:, record:, resource:)
-      locals = {form: form, record: record, resource: resource, action_name: action_name}
-      Arbre::Context.new({}, self) { madmin_form_row(form_row, locals) }.to_s.html_safe
-    end
   end
 end

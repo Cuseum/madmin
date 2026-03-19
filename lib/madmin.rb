@@ -14,8 +14,8 @@ module Madmin
   autoload :Search, "madmin/search"
 
   module Arbre
-    autoload :FormRow, "madmin/arbre/form_row"
-    autoload :FormCol, "madmin/arbre/form_col"
+    autoload :Row, "madmin/arbre/row"
+    autoload :Col, "madmin/arbre/col"
   end
 
   module Fields

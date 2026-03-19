@@ -14,8 +14,6 @@
         <% nested_field = nested_attribute.field %>
 
         <%= render "madmin/shared/form_field", field: nested_field, record: nested_form.object, form: nested_form, resource: field.resource %>
-      <% elsif item.is_a?(Madmin::Resource::FormRow) %>
-        <%= render_form_row(item, form: nested_form, record: nested_form.object, resource: field.resource) %>
       <% else %>
         <%= render partial: "madmin/application/form_section", locals: { form_section: item, record: nested_form.object, form: nested_form, resource: field.resource } %>
       <% end %>

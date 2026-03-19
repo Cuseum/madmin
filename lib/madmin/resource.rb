@@ -4,18 +4,14 @@ module Madmin
     FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
     FormSection = Data.define(:name, :label, :description, :section_items) do
       def attribute_names
-        section_items.flat_map do |item|
-          item.is_a?(Madmin::Resource::FormRow) ? item.cols.flat_map(&:attribute_names) : [item]
-        end
+        section_items
       end
     end
-    FormRow = Data.define(:cols)
-    FormCol = Data.define(:attribute_names)
 
     # A proxy object used when evaluating index/show/form blocks at class definition
-    # time. It delegates known DSL methods (attribute, section, row, col) to the
-    # resource class and silently captures any arbre-style HTML element calls
-    # (h1, p, div, etc.) so they can be rendered later via Arbre::Context.
+    # time. It delegates known DSL methods (attribute, section) to the resource
+    # class and silently captures any arbre-style HTML element calls (h1, p, div,
+    # row, col, etc.) so they can be rendered later via Arbre::Context.
     class BlockProxy
       def initialize(resource_class)
         @resource_class = resource_class
@@ -34,12 +30,19 @@ module Madmin
         @resource_class.section(...)
       end
 
-      def row(...)
-        @resource_class.row(...)
+      # `row` and `col` are Arbre component builder methods (Madmin::Arbre::Row /
+      # Madmin::Arbre::Col). Mark the block as Arbre-based and still execute the
+      # nested block in this proxy's context so any `attribute` calls inside
+      # register field visibility on the resource before Arbre::Context renders
+      # the block at request time.
+      def row(*_args, **_kwargs, &block)
+        @uses_arbre = true
+        instance_exec(&block) if block
       end
 
-      def col(...)
-        @resource_class.col(...)
+      def col(*_args, **_kwargs, &block)
+        @uses_arbre = true
+        instance_exec(&block) if block
       end
 
       # Arbre uses `para` as the builder method for `<p>` elements to avoid
@@ -155,37 +158,6 @@ module Madmin
         Thread.current[:madmin_collecting_for] = nil
       end
 
-      def row(&block)
-        previous_context = Thread.current[:madmin_collecting_for]
-        row_cols = []
-        Thread.current[:madmin_collecting_for] = [:form_row, self, row_cols]
-        block.call
-        fr = FormRow.new(cols: row_cols)
-        if previous_context&.first == :form && previous_context[1] == self
-          row_cols.each { |col| form_attributes.concat(col.attribute_names) }
-          self.form_items = form_items + [fr]
-        elsif previous_context&.first == :form_tab && previous_context[1] == self
-          previous_context[2] << fr
-        elsif previous_context&.first == :form_section && previous_context[1] == self
-          previous_context[2] << fr
-        end
-      ensure
-        Thread.current[:madmin_collecting_for] = previous_context
-      end
-
-      def col(&block)
-        previous_context = Thread.current[:madmin_collecting_for]
-        col_attribute_names = []
-        Thread.current[:madmin_collecting_for] = [:form_col, self, col_attribute_names]
-        block.call
-        fc = FormCol.new(attribute_names: col_attribute_names)
-        if previous_context&.first == :form_row && previous_context[1] == self
-          previous_context[2] << fc
-        end
-      ensure
-        Thread.current[:madmin_collecting_for] = previous_context
-      end
-
       def form_tab_for(name)
         return nil if name.blank?
         form_tabs.find { |t| t.name == name.to_sym }
@@ -272,8 +244,6 @@ module Madmin
           when :form_tab
             container_attribute_names << name
           when :form_section
-            container_attribute_names << name
-          when :form_col
             container_attribute_names << name
           end
         end
@@ -474,13 +444,7 @@ module Madmin
 
       def flatten_to_attribute_names(items)
         items.flat_map do |item|
-          if item.is_a?(FormSection)
-            item.attribute_names
-          elsif item.is_a?(FormRow)
-            item.cols.flat_map(&:attribute_names)
-          else
-            [item]
-          end
+          item.is_a?(FormSection) ? item.attribute_names : [item]
         end
       end
     end
