@@ -13,15 +13,14 @@ module Madmin
     # safe. Developers are responsible for using html_safe or raw only on trusted
     # content, as with any other Rails view helper.
     #
-    # When `assigns` contains `:resource`, `:form`, `:record`, and `:action_name`,
-    # an `attribute` method is injected into the Arbre context so that calls like
+    # When `assigns` contains `:resource`, `:form`, and `:record`, an `attribute`
+    # method is injected into the Arbre context so that calls like
     # `col { attribute :first_name }` render the corresponding form field partial
     # at Arbre render time.
     def render_arbre(block, assigns = {})
       resource = assigns[:resource]
       form = assigns[:form]
       record = assigns[:record]
-      view_action = assigns.fetch(:action_name) { action_name }.to_s
       view = self
 
       ctx = ::Arbre::Context.new(assigns, self)
@@ -34,7 +33,7 @@ module Madmin
       ctx.define_singleton_method(:attribute) do |attr_name, *_args, **_opts|
         next unless resource
         attr = resource.attributes[attr_name]
-        next unless attr&.field&.present? && attr.field.visible?(view_action)
+        next unless attr&.field&.present?
         current_arbre_element << view.render(
           "madmin/shared/form_field",
           field: attr.field,

@@ -351,6 +351,23 @@ class ArbreFormTabHtmlResource < Madmin::Resource
   end
 end
 
+# Resource with a form block AND a form_tab containing Arbre HTML + attributes.
+# The tab attribute (:last_name) is NOT in form_attributes (set by the form block),
+# which means field.visible?(:edit) returns false for it. The render_arbre attribute
+# method must NOT check visible? so it still renders tab attributes in Arbre mode.
+class ArbreFormTabWithFormBlockResource < Madmin::Resource
+  model User
+
+  form do
+    attribute :first_name
+  end
+
+  form_tab :extra do
+    h2 { "Extra fields" }
+    attribute :last_name
+  end
+end
+
 class ArbreResourceTest < ActiveSupport::TestCase
   test "arbre index block is stored" do
     assert_not_nil ArbreIndexResource.index_block
@@ -441,5 +458,19 @@ class ArbreResourceTest < ActiveSupport::TestCase
     tab = ArbreFormTabHtmlResource.form_tab_for(:layout)
     html = Arbre::Context.new({}, nil, &tab.tab_block).to_s
     assert_includes html, "<h2>Details Tab</h2>"
+  end
+
+  test "form_tab with arbre and form block: attribute is in tab_items even when not in form_attributes" do
+    # form block sets form_attributes to [:first_name] only
+    assert_equal [:first_name], ArbreFormTabWithFormBlockResource.form_attributes
+
+    tab = ArbreFormTabWithFormBlockResource.form_tab_for(:extra)
+    # Tab items includes :last_name despite it not being in form_attributes
+    assert_includes tab.attribute_names, :last_name
+    # Arbre mode is active because h2 is present
+    assert_not_nil tab.tab_block
+    # visible?(:edit) returns false for :last_name because form_attributes excludes it;
+    # render_arbre must NOT gate on visible? so the attribute still renders in Arbre tabs.
+    refute ArbreFormTabWithFormBlockResource.attributes[:last_name].field.visible?(:edit)
   end
 end
