@@ -2,6 +2,7 @@ PATH
   remote: ..
   specs:
     madmin (2.3.2)
+      arbre (>= 1.1)
       importmap-rails
       pagy (>= 3.5)
       propshaft
@@ -90,6 +91,8 @@ GEM
       bundler
       rake
       thor (>= 0.14.0)
+    arbre (2.2.1)
+      activesupport (>= 7.0)
     ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.20)

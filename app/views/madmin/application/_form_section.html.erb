@@ -3,13 +3,9 @@
   <% if form_section.description.present? %>
     <p class="form-section-description"><%= form_section.description.respond_to?(:call) ? form_section.description.call : form_section.description %></p>
   <% end %>
-  <% form_section.section_items.each do |item| %>
-    <% if item.is_a?(Madmin::Resource::FormRow) %>
-      <%= render partial: "form_row", locals: { form_row: item, record: record, form: form, resource: resource } %>
-    <% else %>
-      <% attribute = resource.attributes[item] %>
-      <% next if attribute.nil? || attribute.field.nil? || !attribute.field.visible?(action_name) %>
-      <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
-    <% end %>
+  <% form_section.section_items.each do |attr_name| %>
+    <% attribute = resource.attributes[attr_name] %>
+    <% next if attribute.nil? || attribute.field.nil? || !attribute.field.visible?(action_name) %>
+    <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
   <% end %>
 </div>

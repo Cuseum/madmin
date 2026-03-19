@@ -1,16 +1,75 @@
 module Madmin
   class Resource
     Attribute = Data.define(:name, :type, :field)
-    FormTab = Data.define(:name, :label, :attribute_names, :tab_items)
+    FormTab = Data.define(:name, :label, :attribute_names, :tab_items, :tab_block)
     FormSection = Data.define(:name, :label, :description, :section_items) do
+      # section_items is always an array of attribute name symbols; row/col
+      # nesting is handled by Arbre at render time, not by this data struct.
       def attribute_names
-        section_items.flat_map do |item|
-          item.is_a?(Madmin::Resource::FormRow) ? item.cols.flat_map(&:attribute_names) : [item]
-        end
+        section_items
       end
     end
-    FormRow = Data.define(:cols)
-    FormCol = Data.define(:attribute_names)
+
+    # A proxy object used when evaluating index/show/form blocks at class definition
+    # time. It delegates known DSL methods (attribute, section) to the resource
+    # class and silently captures any arbre-style HTML element calls (h1, p, div,
+    # row, col, etc.) so they can be rendered later via Arbre::Context.
+    class BlockProxy
+      def initialize(resource_class)
+        @resource_class = resource_class
+        @uses_arbre = false
+      end
+
+      def uses_arbre?
+        @uses_arbre
+      end
+
+      def attribute(...)
+        @resource_class.attribute(...)
+      end
+
+      def section(...)
+        @resource_class.section(...)
+      end
+
+      # `row` and `col` are Arbre component builder methods (Madmin::Arbre::Row /
+      # Madmin::Arbre::Col). Mark the block as Arbre-based and still execute the
+      # nested block in this proxy's context so any `attribute` calls inside
+      # register field visibility on the resource before Arbre::Context renders
+      # the block at request time.
+      def row(*_args, **_kwargs, &block)
+        @uses_arbre = true
+        instance_exec(&block) if block
+      end
+
+      def col(*_args, **_kwargs, &block)
+        @uses_arbre = true
+        instance_exec(&block) if block
+      end
+
+      # Arbre uses `para` as the builder method for `<p>` elements to avoid
+      # conflict with Ruby's Kernel#p. Explicitly define `p` here so it is
+      # detected as an arbre call rather than dispatching to Kernel#p. Like
+      # method_missing below, this only sets the detection flag; actual rendering
+      # happens later via Arbre::Context in views.
+      def p(*_args, **_kwargs, &_block)
+        @uses_arbre = true
+      end
+
+      # Intentionally intercepts all unknown method calls (arbre HTML elements like
+      # h1, div, etc.) without calling super. The BlockProxy is a purpose-built
+      # proxy whose entire job is to detect and silently absorb arbre-style calls
+      # during class definition time so the raw block can later be rendered by
+      # Arbre::Context in views. Calling super here would raise NoMethodError, which
+      # is undesirable.
+      def method_missing(_method_name, *_args, **_kwargs)
+        @uses_arbre = true
+      end
+
+      def respond_to_missing?(_method_name, _include_private = false)
+        true
+      end
+    end
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
@@ -22,6 +81,9 @@ module Madmin
     class_attribute :form_tabs, default: []
     class_attribute :form_sections, default: []
     class_attribute :form_items, default: []
+    class_attribute :index_block, default: nil
+    class_attribute :show_block, default: nil
+    class_attribute :form_block, default: nil
 
     class << self
       def inherited(base)
@@ -31,21 +93,30 @@ module Madmin
         base.form_tabs = []
         base.form_sections = []
         base.form_items = []
+        base.index_block = nil
+        base.show_block = nil
+        base.form_block = nil
         super
       end
 
       def index(&block)
         self.index_attributes = []
+        self.index_block = nil
         Thread.current[:madmin_collecting_for] = [:index, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.index_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end
 
       def show(&block)
         self.show_attributes = []
+        self.show_block = nil
         Thread.current[:madmin_collecting_for] = [:show, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.show_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end
@@ -53,8 +124,11 @@ module Madmin
       def form(&block)
         self.form_attributes = []
         self.form_items = []
+        self.form_block = nil
         Thread.current[:madmin_collecting_for] = [:form, self, nil]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        self.form_block = block if proxy.uses_arbre?
       ensure
         Thread.current[:madmin_collecting_for] = nil
       end
@@ -79,42 +153,13 @@ module Madmin
       def form_tab(name, label: name.to_s.humanize, &block)
         tab_items = []
         Thread.current[:madmin_collecting_for] = [:form_tab, self, tab_items]
-        block.call
+        proxy = BlockProxy.new(self)
+        proxy.instance_exec(&block)
+        tab_block = proxy.uses_arbre? ? block : nil
         attribute_names = flatten_to_attribute_names(tab_items)
-        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items)]
+        self.form_tabs = form_tabs + [FormTab.new(name: name.to_sym, label: label, attribute_names: attribute_names, tab_items: tab_items, tab_block: tab_block)]
       ensure
         Thread.current[:madmin_collecting_for] = nil
-      end
-
-      def row(&block)
-        previous_context = Thread.current[:madmin_collecting_for]
-        row_cols = []
-        Thread.current[:madmin_collecting_for] = [:form_row, self, row_cols]
-        block.call
-        fr = FormRow.new(cols: row_cols)
-        if previous_context&.first == :form && previous_context[1] == self
-          row_cols.each { |col| form_attributes.concat(col.attribute_names) }
-          self.form_items = form_items + [fr]
-        elsif previous_context&.first == :form_tab && previous_context[1] == self
-          previous_context[2] << fr
-        elsif previous_context&.first == :form_section && previous_context[1] == self
-          previous_context[2] << fr
-        end
-      ensure
-        Thread.current[:madmin_collecting_for] = previous_context
-      end
-
-      def col(&block)
-        previous_context = Thread.current[:madmin_collecting_for]
-        col_attribute_names = []
-        Thread.current[:madmin_collecting_for] = [:form_col, self, col_attribute_names]
-        block.call
-        fc = FormCol.new(attribute_names: col_attribute_names)
-        if previous_context&.first == :form_row && previous_context[1] == self
-          previous_context[2] << fc
-        end
-      ensure
-        Thread.current[:madmin_collecting_for] = previous_context
       end
 
       def form_tab_for(name)
@@ -203,8 +248,6 @@ module Madmin
           when :form_tab
             container_attribute_names << name
           when :form_section
-            container_attribute_names << name
-          when :form_col
             container_attribute_names << name
           end
         end
@@ -405,13 +448,7 @@ module Madmin
 
       def flatten_to_attribute_names(items)
         items.flat_map do |item|
-          if item.is_a?(FormSection)
-            item.attribute_names
-          elsif item.is_a?(FormRow)
-            item.cols.flat_map(&:attribute_names)
-          else
-            [item]
-          end
+          item.is_a?(FormSection) ? item.attribute_names : [item]
         end
       end
     end

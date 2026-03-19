@@ -11,14 +11,14 @@
     </div>
   <% end %>
 
-  <% if resource.form_items.any? %>
+  <% if resource.form_block %>
+    <%= render_arbre resource.form_block, { form: form, record: record, resource: resource, action_name: action_name } %>
+  <% elsif resource.form_items.any? %>
     <% resource.form_items.each do |item| %>
       <% if item.is_a?(Symbol) %>
         <% attribute = resource.attributes[item] %>
         <% next unless attribute&.field&.present? && attribute.field.visible?(action_name) %>
         <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
-      <% elsif item.is_a?(Madmin::Resource::FormRow) %>
-        <%= render partial: "form_row", locals: { form_row: item, record: record, form: form, resource: resource } %>
       <% else %>
         <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
       <% end %>

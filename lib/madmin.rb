@@ -13,6 +13,11 @@ module Madmin
   autoload :ResourceBuilder, "madmin/resource_builder"
   autoload :Search, "madmin/search"
 
+  module Arbre
+    require "madmin/arbre/row"
+    require "madmin/arbre/col"
+  end
+
   module Fields
     autoload :Attachment, "madmin/fields/attachment"
     autoload :Attachments, "madmin/fields/attachments"

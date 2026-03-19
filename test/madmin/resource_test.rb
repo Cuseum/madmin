@@ -96,47 +96,6 @@ class HiddenMenuResource < Madmin::Resource
   menu hidden: true
 end
 
-class FormRowResource < Madmin::Resource
-  model User
-
-  form do
-    attribute :email
-
-    row do
-      col { attribute :first_name }
-      col { attribute :last_name }
-    end
-  end
-end
-
-class FormTabWithRowResource < Madmin::Resource
-  model User
-
-  form_tab :details do
-    attribute :email
-
-    row do
-      col { attribute :first_name }
-      col { attribute :last_name }
-    end
-  end
-end
-
-class FormSectionWithRowResource < Madmin::Resource
-  model User
-
-  form do
-    section :details do
-      attribute :email
-
-      row do
-        col { attribute :first_name }
-        col { attribute :last_name }
-      end
-    end
-  end
-end
-
 class ResourceTest < ActiveSupport::TestCase
   test "menu_options returns false when menu hidden: true" do
     assert_equal false, HiddenMenuResource.menu_options
@@ -339,91 +298,179 @@ class ResourceTest < ActiveSupport::TestCase
     assert_includes permitted, :last_name
     assert_includes permitted, :email
   end
+end
 
-  test "row creates a FormRow in form_items" do
-    items = FormRowResource.form_items
-    assert_equal 2, items.length
-    assert_equal :email, items.first
-    assert_kind_of Madmin::Resource::FormRow, items.last
+class ArbreIndexResource < Madmin::Resource
+  model User
+
+  index do
+    h1 { "Users" }
+  end
+end
+
+class ArbreShowResource < Madmin::Resource
+  model User
+
+  show do
+    para { "User details" }
+  end
+end
+
+class ArbreFormResource < Madmin::Resource
+  model User
+
+  form do
+    div do
+      para { "Custom form content" }
+    end
+  end
+end
+
+class ArbreFormTabResource < Madmin::Resource
+  model User
+
+  form_tab :details do
+    row do
+      col { attribute :first_name }
+      col { attribute :last_name }
+    end
   end
 
-  test "row contains the correct number of cols" do
-    row = FormRowResource.form_items.last
-    assert_equal 2, row.cols.size
+  form_tab :contact do
+    attribute :email
+  end
+end
+
+# Separate resource with pure Arbre HTML (no `attribute` inside Arbre elements)
+# used to test tab_block HTML rendering in isolation.
+class ArbreFormTabHtmlResource < Madmin::Resource
+  model User
+
+  form_tab :layout do
+    h2 { "Details Tab" }
+  end
+end
+
+# Resource with a form block AND a form_tab containing Arbre HTML + attributes.
+# The tab attribute (:last_name) is NOT in form_attributes (set by the form block),
+# which means field.visible?(:edit) returns false for it. The render_arbre attribute
+# method must NOT check visible? so it still renders tab attributes in Arbre mode.
+class ArbreFormTabWithFormBlockResource < Madmin::Resource
+  model User
+
+  form do
+    attribute :first_name
   end
 
-  test "col collects attribute names" do
-    row = FormRowResource.form_items.last
-    assert_kind_of Madmin::Resource::FormCol, row.cols.first
-    assert_includes row.cols.first.attribute_names, :first_name
-    assert_kind_of Madmin::Resource::FormCol, row.cols.last
-    assert_includes row.cols.last.attribute_names, :last_name
+  form_tab :extra do
+    h2 { "Extra fields" }
+    attribute :last_name
+  end
+end
+
+class ArbreResourceTest < ActiveSupport::TestCase
+  test "arbre index block is stored" do
+    assert_not_nil ArbreIndexResource.index_block
   end
 
-  test "row makes attributes visible in form context" do
-    assert FormRowResource.attributes[:first_name].field.visible?(:form)
-    assert FormRowResource.attributes[:last_name].field.visible?(:form)
-    assert FormRowResource.attributes[:email].field.visible?(:form)
+  test "arbre index block is a Proc" do
+    assert_kind_of Proc, ArbreIndexResource.index_block
   end
 
-  test "row attributes are included in permitted_params" do
-    permitted = FormRowResource.permitted_params
+  test "arbre show block is stored" do
+    assert_not_nil ArbreShowResource.show_block
+  end
+
+  test "arbre show block is a Proc" do
+    assert_kind_of Proc, ArbreShowResource.show_block
+  end
+
+  test "arbre form block is stored" do
+    assert_not_nil ArbreFormResource.form_block
+  end
+
+  test "arbre form block is a Proc" do
+    assert_kind_of Proc, ArbreFormResource.form_block
+  end
+
+  test "attribute-style index block does not store an arbre block" do
+    assert_nil BlockStyleResource.index_block
+  end
+
+  test "attribute-style show block does not store an arbre block" do
+    assert_nil BlockStyleResource.show_block
+  end
+
+  test "attribute-style form block does not store an arbre block" do
+    assert_nil BlockStyleResource.form_block
+  end
+
+  test "arbre index block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreIndexResource.index_block).to_s
+    assert_includes html, "<h1>Users</h1>"
+  end
+
+  test "arbre show block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreShowResource.show_block).to_s
+    assert_includes html, "<p>User details</p>"
+  end
+
+  test "arbre form block renders correct html" do
+    html = Arbre::Context.new({}, nil, &ArbreFormResource.form_block).to_s
+    assert_includes html, "<div>"
+    assert_includes html, "<p>Custom form content</p>"
+  end
+
+  test "arbre blocks are not inherited" do
+    subclass = Class.new(ArbreIndexResource)
+    assert_nil subclass.index_block
+  end
+
+  test "form_tab with arbre content stores tab_block" do
+    tab = ArbreFormTabResource.form_tab_for(:details)
+    assert_not_nil tab.tab_block
+    assert_kind_of Proc, tab.tab_block
+  end
+
+  test "form_tab without arbre content has nil tab_block" do
+    tab = ArbreFormTabResource.form_tab_for(:contact)
+    assert_nil tab.tab_block
+  end
+
+  test "form_tab with arbre block registers attribute visibility" do
+    assert ArbreFormTabResource.attributes[:first_name].field.visible?(:form)
+    assert ArbreFormTabResource.attributes[:last_name].field.visible?(:form)
+  end
+
+  test "form_tab with arbre block is included in attribute_names for permitted params" do
+    permitted = ArbreFormTabResource.tab_permitted_params(:details)
     assert_includes permitted, :first_name
     assert_includes permitted, :last_name
-    assert_includes permitted, :email
   end
 
-  test "row inside form_tab creates a FormRow in tab_items" do
-    tab = FormTabWithRowResource.form_tab_for(:details)
-    assert_equal 2, tab.tab_items.length
-    assert_equal :email, tab.tab_items.first
-    assert_kind_of Madmin::Resource::FormRow, tab.tab_items.last
+  test "form_tab arbre block is stored for pure html tab" do
+    tab = ArbreFormTabHtmlResource.form_tab_for(:layout)
+    assert_not_nil tab.tab_block
+    assert_kind_of Proc, tab.tab_block
   end
 
-  test "row inside form_tab contains the correct number of cols" do
-    tab = FormTabWithRowResource.form_tab_for(:details)
-    row = tab.tab_items.last
-    assert_equal 2, row.cols.size
+  test "form_tab arbre block renders correct html" do
+    tab = ArbreFormTabHtmlResource.form_tab_for(:layout)
+    html = Arbre::Context.new({}, nil, &tab.tab_block).to_s
+    assert_includes html, "<h2>Details Tab</h2>"
   end
 
-  test "row inside form_tab collects flat attribute_names including col attributes" do
-    tab = FormTabWithRowResource.form_tab_for(:details)
-    assert_includes tab.attribute_names, :email
-    assert_includes tab.attribute_names, :first_name
+  test "form_tab with arbre and form block: attribute is in tab_items even when not in form_attributes" do
+    # form block sets form_attributes to [:first_name] only
+    assert_equal [:first_name], ArbreFormTabWithFormBlockResource.form_attributes
+
+    tab = ArbreFormTabWithFormBlockResource.form_tab_for(:extra)
+    # Tab items includes :last_name despite it not being in form_attributes
     assert_includes tab.attribute_names, :last_name
-  end
-
-  test "row inside form_tab attributes are included in tab_permitted_params" do
-    permitted = FormTabWithRowResource.tab_permitted_params(:details)
-    assert_includes permitted, :email
-    assert_includes permitted, :first_name
-    assert_includes permitted, :last_name
-  end
-
-  test "row inside section creates a FormRow in section_items" do
-    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
-    assert_equal 2, section.section_items.length
-    assert_equal :email, section.section_items.first
-    assert_kind_of Madmin::Resource::FormRow, section.section_items.last
-  end
-
-  test "row inside section contains the correct number of cols" do
-    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
-    row = section.section_items.last
-    assert_equal 2, row.cols.size
-  end
-
-  test "row inside section collects flat attribute_names including col attributes" do
-    section = FormSectionWithRowResource.form_sections.find { |s| s.name == :details }
-    assert_includes section.attribute_names, :email
-    assert_includes section.attribute_names, :first_name
-    assert_includes section.attribute_names, :last_name
-  end
-
-  test "row inside section attributes are included in permitted_params" do
-    permitted = FormSectionWithRowResource.permitted_params
-    assert_includes permitted, :email
-    assert_includes permitted, :first_name
-    assert_includes permitted, :last_name
+    # Arbre mode is active because h2 is present
+    assert_not_nil tab.tab_block
+    # visible?(:edit) returns false for :last_name because form_attributes excludes it;
+    # render_arbre must NOT gate on visible? so the attribute still renders in Arbre tabs.
+    refute ArbreFormTabWithFormBlockResource.attributes[:last_name].field.visible?(:edit)
   end
 end

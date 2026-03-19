@@ -16,6 +16,9 @@
   </div>
 </header>
 
+<% if resource.show_block %>
+  <%= render_arbre resource.show_block %>
+<% else %>
 <div class="table-scroll">
   <table>
     <tbody>
@@ -38,3 +41,4 @@
     </tbody>
   </table>
 </div>
+<% end %>

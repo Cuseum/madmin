@@ -31,6 +31,9 @@
   <% end %>
 </nav>
 
+<% if resource.index_block %>
+  <%= render_arbre resource.index_block %>
+<% else %>
 <div class="table-scroll">
   <table>
     <thead>
@@ -73,3 +76,4 @@
     <%== pagy_info @pagy %>
   <% end %>
 </div>
+<% end %>
