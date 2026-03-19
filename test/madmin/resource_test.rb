@@ -440,7 +440,7 @@ class ArbreShowResource < Madmin::Resource
   model User
 
   show do
-    p { "User details" }
+    para { "User details" }
   end
 end
 
@@ -449,7 +449,7 @@ class ArbreFormResource < Madmin::Resource
 
   form do
     div do
-      p { "Custom form content" }
+      para { "Custom form content" }
     end
   end
 end

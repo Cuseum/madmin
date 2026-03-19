@@ -42,8 +42,17 @@ module Madmin
         @resource_class.col(...)
       end
 
+      # Arbre uses `para` as the builder method for `<p>` elements to avoid
+      # conflict with Ruby's Kernel#p. Explicitly define `p` here so it is
+      # detected as an arbre call rather than dispatching to Kernel#p. Like
+      # method_missing below, this only sets the detection flag; actual rendering
+      # happens later via Arbre::Context in views.
+      def p(*_args, **_kwargs, &_block)
+        @uses_arbre = true
+      end
+
       # Intentionally intercepts all unknown method calls (arbre HTML elements like
-      # h1, p, div, etc.) without calling super. The BlockProxy is a purpose-built
+      # h1, div, etc.) without calling super. The BlockProxy is a purpose-built
       # proxy whose entire job is to detect and silently absorb arbre-style calls
       # during class definition time so the raw block can later be rendered by
       # Arbre::Context in views. Calling super here would raise NoMethodError, which
