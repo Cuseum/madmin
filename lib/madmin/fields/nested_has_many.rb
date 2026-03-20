@@ -33,6 +33,14 @@ module Madmin
         true
       end
 
+      def add?
+        options.fetch(:allow_add, true)
+      end
+
+      def destroy?
+        options.fetch(:allow_destroy, true)
+      end
+
       private
 
       def permitted_fields

@@ -27,7 +27,9 @@
     <% end %>
   <% end %>
 
-  <small><%= link_to "Remove", "#", data: { action: "click->nested-form#remove_association" } %></small>
+  <% if field.destroy? %>
+    <small><%= link_to "Remove", "#", data: { action: "click->nested-form#remove_association" } %></small>
+  <% end %>
 
   <%= f.hidden_field :_destroy %>
 <% end %>

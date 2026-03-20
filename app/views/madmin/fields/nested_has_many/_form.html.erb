@@ -24,6 +24,8 @@
   <% end %>
 
   <%= content_tag :div, class: '', data: { target:"nested-form.links" } do %>
-    <%= link_to "+ Add new", "#",  data: { action: "click->nested-form#add_association" } %>
+    <% if field.add? %>
+      <%= link_to "+ Add new", "#",  data: { action: "click->nested-form#add_association" } %>
+    <% end %>
   <% end %>
 </div>
