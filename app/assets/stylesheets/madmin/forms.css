@@ -146,3 +146,8 @@ select {
 .form-col {
   min-width: 0;
 }
+
+.form-section {
+  border-bottom-width: 1px;
+  margin-bottom: 1rem;
+}
