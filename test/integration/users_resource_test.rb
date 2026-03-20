@@ -106,4 +106,44 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     assert_select "h3.form-section-title", text: "Name"
     assert_select "input[name='user[first_name]']"
   end
+
+  test "section inside form_tab renders attributes even when form_attributes excludes them" do
+    # Regression: when a resource has both a `form` block (setting form_attributes to a subset)
+    # and a form_tab with a section, attributes in the tab section were incorrectly filtered
+    # out by the visible?() check in _form_section.html.erb.
+    #
+    # All class-level state changes are fully restored in the ensure block below.
+    original_attributes = UserResource.attributes.dup
+    original_form_attributes = UserResource.form_attributes
+    original_form_items = UserResource.form_items
+    original_form_block = UserResource.form_block
+    original_form_tabs = UserResource.form_tabs
+
+    # Simulate the state a resource ends up in when a developer has defined a `form` block
+    # (which sets form_attributes) alongside form_tab blocks. form_block is nil here because
+    # we're testing the non-arbre path; form_attributes being a non-nil array (from `form {}`)
+    # is what triggers the visibility-filtering bug in _form_section.html.erb.
+    UserResource.form_attributes = [:first_name]
+    UserResource.form_items = [:first_name]
+    UserResource.form_block = nil
+
+    # Add a form_tab with a section containing :posts (not in form_attributes above)
+    UserResource.form_tabs = []
+    UserResource.form_tab(:associations) do
+      section "Posts" do
+        attribute :posts, :nested_has_many, allow_add: false, allow_destroy: false
+      end
+    end
+
+    get edit_madmin_user_path(users(:one), tab: :associations)
+    assert_response :success
+    assert_select "div.form-section"
+    assert_select "[data-controller='nested-form']"
+  ensure
+    UserResource.attributes = original_attributes
+    UserResource.form_attributes = original_form_attributes
+    UserResource.form_items = original_form_items
+    UserResource.form_block = original_form_block
+    UserResource.form_tabs = original_form_tabs
+  end
 end

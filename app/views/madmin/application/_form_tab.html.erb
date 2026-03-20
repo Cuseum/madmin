@@ -20,7 +20,7 @@
         <% next if attribute.nil? || attribute.field.nil? %>
         <%= render "madmin/shared/form_field", field: attribute.field, record: record, form: form, resource: resource %>
       <% else %>
-        <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource } %>
+        <%= render partial: "form_section", locals: { form_section: item, record: record, form: form, resource: resource, from_tab: true } %>
       <% end %>
     <% end %>
   <% end %>
