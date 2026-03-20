@@ -84,5 +84,9 @@ module Madmin
     def paginateable?
       false
     end
+
+    def input_html_options
+      options.slice(:disabled, :placeholder, :readonly)
+    end
   end
 end
