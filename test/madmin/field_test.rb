@@ -45,4 +45,49 @@ class Madmin::FieldTest < ActiveSupport::TestCase
   test "visible?" do
     assert UserResource.attributes[:name].field.visible?(:index)
   end
+
+  test "input_html_options is empty when no relevant options set" do
+    field = UserResource.attributes[:first_name].field
+    assert_equal({}, field.input_html_options)
+  end
+
+  test "input_html_options includes readonly when set" do
+    field = Madmin::Fields::String.new(
+      attribute_name: :first_name,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(readonly: true)
+    )
+    assert_equal({readonly: true}, field.input_html_options)
+  end
+
+  test "input_html_options includes disabled when set" do
+    field = Madmin::Fields::String.new(
+      attribute_name: :first_name,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(disabled: true)
+    )
+    assert_equal({disabled: true}, field.input_html_options)
+  end
+
+  test "input_html_options includes placeholder when set" do
+    field = Madmin::Fields::String.new(
+      attribute_name: :first_name,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(placeholder: "Enter name")
+    )
+    assert_equal({placeholder: "Enter name"}, field.input_html_options)
+  end
+
+  test "input_html_options excludes unknown options" do
+    field = Madmin::Fields::String.new(
+      attribute_name: :first_name,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(readonly: true, hint: "some hint")
+    )
+    assert_equal({readonly: true}, field.input_html_options)
+  end
 end
