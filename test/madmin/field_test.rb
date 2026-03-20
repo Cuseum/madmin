@@ -27,6 +27,16 @@ class Madmin::FieldTest < ActiveSupport::TestCase
     assert_equal "Number of times the draft was saved", nested_field.hint
   end
 
+  test "hint is nil when hint: nil is passed" do
+    assert_nil UserResource.attributes[:email].field.hint
+  end
+
+  test "hint uses inline value when hint: string is passed" do
+    hint = UserResource.attributes[:bio].field.hint
+    assert_equal "Custom inline hint", hint
+    assert_predicate hint, :html_safe?
+  end
+
   test "searchable?" do
     assert UserResource.attributes[:first_name].field.searchable?
     refute UserResource.attributes[:created_at].field.searchable?

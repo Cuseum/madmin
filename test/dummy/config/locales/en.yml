@@ -39,5 +39,6 @@ en:
       user:
         first_name: "Enter your given name"
         last_name: "Your <strong>family</strong> name"
+        email: "Use your work email"
       post_stat:
         drafts_saved: "Number of times the draft was saved"

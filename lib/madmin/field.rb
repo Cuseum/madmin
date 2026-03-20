@@ -59,6 +59,11 @@ module Madmin
     end
 
     def hint
+      # If hint is explicitly set in options, use it (nil hides the hint, string overrides i18n)
+      if options.key?(:hint)
+        return options[:hint]&.html_safe
+      end
+
       # Hints are sourced from developer-controlled i18n locale files, so marking
       # them as html_safe allows HTML markup (links, bold text, etc.) in hints.
       I18n.t("activerecord.hints.#{model.model_name.i18n_key}.#{attribute_name}", default: nil)&.html_safe
