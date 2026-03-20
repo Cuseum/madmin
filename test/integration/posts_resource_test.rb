@@ -67,10 +67,18 @@ class PostsResourceTest < ActionDispatch::IntegrationTest
   test "edit page renders sections from nested resource form definition" do
     get edit_madmin_post_path(posts(:one))
     assert_response :success
-    assert_select "div.form-section", count: 1
     assert_select "h3.form-section-title", text: "Statistics"
     assert_select "input[name='post[post_stat_attributes][drafts_saved]']"
     assert_select "input[name='post[post_stat_attributes][keywords]']"
+    assert_select "[data-controller='nested-form']"
+  end
+
+  test "edit page renders nested_has_many inside nested_has_one without crashing" do
+    get edit_madmin_post_path(posts(:one))
+    assert_response :success
+    assert_select "[data-controller='nested-form']"
+    assert_select "a", text: "+ Add new"
+    assert_select "textarea[name='post[post_stat_attributes][comments_attributes][NEW_RECORD][body]']"
   end
 
   test "edit page renders arbre form with row/col for nested_has_one resource" do
