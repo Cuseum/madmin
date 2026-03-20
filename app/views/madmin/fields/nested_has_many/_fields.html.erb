@@ -1,5 +1,7 @@
 <%= content_tag :div, class: "nested-fields", data: { new_record: f.object.new_record? } do %>
-  <% if field.resource.form_items.any? %>
+  <% if field.resource.form_block %>
+    <%= render_arbre field.resource.form_block, { form: f, record: f.object, resource: field.resource, action_name: action_name } %>
+  <% elsif field.resource.form_items.any? %>
     <% field.resource.form_items.each do |item| %>
       <% if item.is_a?(Symbol) %>
         <% nested_attribute = field.nested_attributes[item] %>
