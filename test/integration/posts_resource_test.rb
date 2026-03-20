@@ -72,4 +72,25 @@ class PostsResourceTest < ActionDispatch::IntegrationTest
     assert_select "input[name='post[post_stat_attributes][drafts_saved]']"
     assert_select "input[name='post[post_stat_attributes][keywords]']"
   end
+
+  test "edit page renders arbre form with row/col for nested_has_one resource" do
+    # Temporarily give PostStatResource an arbre form block with row/col so we
+    # can verify the nested_has_one view routes through render_arbre when
+    # form_block is set, producing the grid markup.
+    original_block = PostStatResource.form_block
+    PostStatResource.form_block = proc do
+      row do
+        col { attribute :drafts_saved }
+        col { attribute :keywords }
+      end
+    end
+
+    get edit_madmin_post_path(posts(:one))
+    assert_response :success
+    assert_select "div.form-row"
+    assert_select "input[name='post[post_stat_attributes][drafts_saved]']"
+    assert_select "input[name='post[post_stat_attributes][keywords]']"
+  ensure
+    PostStatResource.form_block = original_block
+  end
 end

@@ -78,4 +78,9 @@ class NestedHasOneTest < ActiveSupport::TestCase
   ensure
     PostStatResource.form_attributes = nil
   end
+
+  test "form_block is nil when nested resource form does not use row/col" do
+    # PostStatResource uses a plain section (no row/col) so form_block stays nil
+    assert_nil PostStatResource.form_block
+  end
 end
