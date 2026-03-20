@@ -18,6 +18,8 @@ class UserResource < Madmin::Resource
   attribute :monthly_newsletter
   attribute :avatar, index: false
   attribute :something, :string, index: false, form: false
+  attribute :email, index: false, form: false, hint: nil
+  attribute :bio, :string, index: false, form: false, hint: "Custom inline hint"
 
   # Associations
   attribute :posts, :nested_has_many, skip: %I[attachments]
