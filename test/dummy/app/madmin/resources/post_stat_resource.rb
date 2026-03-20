@@ -14,6 +14,7 @@ class PostStatResource < Madmin::Resource
     section :statistics do
       attribute :drafts_saved
       attribute :keywords
+      attribute :comments, :nested_has_many
     end
   end
 
