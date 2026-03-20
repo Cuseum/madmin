@@ -24,6 +24,36 @@ class NestedHasManyTest < ActiveSupport::TestCase
     expected_params = [:title, :metadata, :body, :image, "user_id", "_destroy", "id"]
     assert expected_params.all? { |p| field.to_param[:posts_attributes].include?(p) }
   end
+
+  test "add? defaults to true" do
+    field = UserResource.attributes[:posts].field
+    assert field.add?
+  end
+
+  test "add? returns false when allow_add: false is set" do
+    field = Madmin::Fields::NestedHasMany.new(
+      attribute_name: :posts,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(allow_add: false)
+    )
+    refute field.add?
+  end
+
+  test "destroy? defaults to true" do
+    field = UserResource.attributes[:posts].field
+    assert field.destroy?
+  end
+
+  test "destroy? returns false when allow_destroy: false is set" do
+    field = Madmin::Fields::NestedHasMany.new(
+      attribute_name: :posts,
+      model: User,
+      resource: UserResource,
+      options: ActiveSupport::OrderedOptions.new.merge(allow_destroy: false)
+    )
+    refute field.destroy?
+  end
 end
 
 class NestedHasOneTest < ActiveSupport::TestCase
