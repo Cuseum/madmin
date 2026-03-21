@@ -10,8 +10,10 @@ module Madmin
     class Row < ::Arbre::Component
       builder_method :row
 
-      def build(*_args, **_kwargs)
+      def build(*args, **kwargs)
         add_class "form-row"
+        html_options = args.last.is_a?(::Hash) ? args.last.merge(kwargs) : kwargs
+        add_class html_options[:class] if html_options[:class]
       end
     end
   end

@@ -101,4 +101,20 @@ class PostsResourceTest < ActionDispatch::IntegrationTest
   ensure
     PostStatResource.form_block = original_block
   end
+
+  test "row and col helpers apply custom CSS classes" do
+    original_block = PostStatResource.form_block
+    PostStatResource.form_block = proc do
+      row(class: "custom-row") do
+        col(class: "custom-col") { attribute :drafts_saved }
+      end
+    end
+
+    get edit_madmin_post_path(posts(:one))
+    assert_response :success
+    assert_select "div.form-row.custom-row"
+    assert_select "div.form-col.custom-col"
+  ensure
+    PostStatResource.form_block = original_block
+  end
 end
