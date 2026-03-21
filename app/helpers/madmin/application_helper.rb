@@ -45,17 +45,15 @@ module Madmin
 
       # Override Arbre's built-in <section> HTML element builder so that the
       # Madmin section DSL (with label: and description: kwargs) works correctly
-      # inside Arbre form blocks.  The body block is instance_exec'd in the
-      # current Arbre context, so nested row/col/attribute calls work as normal.
-      ctx.define_singleton_method(:section) do |section_name, label: section_name.to_s.humanize, description: nil, &blk|
-        div(class: "form-section") do
-          h3(class: "form-section-title") { label }
-          if description
-            desc_text = description.respond_to?(:call) ? description.call : description
-            para(class: "form-section-description") { desc_text } if desc_text.present?
-          end
-          instance_exec(&blk) if blk
-        end
+      # inside Arbre form blocks.  The section body is rendered via the shared
+      # _form_section partial so that both Arbre and non-Arbre form paths produce
+      # identical markup from a single source of truth.
+      ctx.define_singleton_method(:section) do |section_name, label: section_name.to_s.humanize, description: nil, &block|
+        body_html = block ? view.render_arbre(block, assigns) : "".html_safe
+        current_arbre_element << view.render(
+          partial: "madmin/application/form_section",
+          locals: { label: label, description: description, content: body_html }
+        )
       end
 
       ctx.instance_exec(&block)
