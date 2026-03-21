@@ -49,6 +49,10 @@ module Madmin
       else
         include Pagy::Backend
 
+        def params
+          {}
+        end
+
         def paginated_value(record, params)
           page_key = "#{attribute_name}_page"
           page = [params[page_key].to_i, 1].max
