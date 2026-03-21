@@ -10,8 +10,9 @@ module Madmin
     class Col < ::Arbre::Component
       builder_method :col
 
-      def build(*_args, **_kwargs)
+      def build(*_args, **kwargs)
         add_class "form-col"
+        add_class kwargs[:class] if kwargs[:class]
       end
     end
   end
