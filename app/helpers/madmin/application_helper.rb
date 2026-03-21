@@ -52,7 +52,7 @@ module Madmin
         body_html = block ? view.render_arbre(block, assigns) : "".html_safe
         current_arbre_element << view.render(
           partial: "madmin/application/form_section",
-          locals: { label: label, description: description, content: body_html }
+          locals: {label: label, description: description, content: body_html}
         )
       end
 
