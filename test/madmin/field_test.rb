@@ -138,4 +138,11 @@ class Madmin::DialogHasManyFieldTest < ActiveSupport::TestCase
   test "to_param returns the attribute name" do
     assert_equal :comments, field.to_param
   end
+
+  test "edit_dialog_path includes dialog params" do
+    comment = Comment.first || skip("No comments in fixture")
+    path = field.edit_dialog_path(comment)
+    assert_includes path, "dialog=1"
+    assert_includes path, "frame_id=madmin-dialog-frame-comments"
+  end
 end

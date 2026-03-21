@@ -13,7 +13,7 @@ class DialogHasManyTest < ActionDispatch::IntegrationTest
     get edit_madmin_comment_path(comments(:one), dialog: 1, frame_id: "madmin-dialog-frame-<script>alert(1)</script>")
     assert_response :success
     # The malicious characters are stripped; only alphanumerics, hyphens, underscores remain
-    assert_no_match(/<script>/, response.body)
+    assert_no_match(/<script>/i, response.body)
     assert_select "turbo-frame[id='madmin-dialog-frame-scriptalert1script']"
   end
 

@@ -27,7 +27,7 @@
               <% end %>
               <td>
                 <%= link_to "Edit",
-                      associated_resource.edit_path(assoc_record) + "?dialog=1&frame_id=#{field.frame_id}",
+                      field.edit_dialog_path(assoc_record),
                       data: {
                         action: "click->dialog#open",
                         turbo_frame: field.frame_id

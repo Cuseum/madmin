@@ -20,6 +20,19 @@ module Madmin
         end
       end
 
+      # Builds the edit URL for the associated record, including dialog-mode params.
+      def edit_dialog_path(assoc_record)
+        ar = associated_resource
+        return unless ar
+
+        ar.url_helpers.polymorphic_path(
+          [:madmin, ar.route_namespace, ar.becomes(assoc_record)],
+          action: :edit,
+          dialog: 1,
+          frame_id: frame_id
+        )
+      end
+
       # Unique HTML id for the <dialog> element for this field.
       def dialog_id
         "madmin-dialog-#{attribute_name}"
