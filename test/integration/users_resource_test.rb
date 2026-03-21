@@ -146,4 +146,38 @@ class UsersResourceTest < ActionDispatch::IntegrationTest
     UserResource.form_block = original_form_block
     UserResource.form_tabs = original_form_tabs
   end
+
+  test "arbre form block section renders via _form_section partial" do
+    # When a form block uses row/col (making it an Arbre block), the `section`
+    # helper must render using the _form_section.html.erb partial so that both
+    # Arbre and non-Arbre form paths share the same markup structure.
+    original_block = UserResource.form_block
+    original_form_attributes = UserResource.form_attributes
+
+    UserResource.form_block = proc do
+      section :name, label: "Full Name", description: "Enter the user name" do
+        row do
+          col { attribute :first_name }
+          col { attribute :last_name }
+        end
+      end
+    end
+    UserResource.form_attributes = [:first_name, :last_name]
+
+    get edit_madmin_user_path(users(:one))
+    assert_response :success
+
+    # Verify the _form_section partial's structure is rendered (div.form-section,
+    # h3.form-section-title, p.form-section-description)
+    assert_select "div.form-section", count: 1
+    assert_select "h3.form-section-title", text: "Full Name"
+    assert_select "p.form-section-description", text: "Enter the user name"
+
+    # Verify the section body (row/col with attributes) is still rendered
+    assert_select "input[name='user[first_name]']"
+    assert_select "input[name='user[last_name]']"
+  ensure
+    UserResource.form_block = original_block
+    UserResource.form_attributes = original_form_attributes
+  end
 end
