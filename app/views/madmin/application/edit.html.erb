@@ -1,24 +1,37 @@
-<%= content_for :title, "Edit #{resource.display_name(@record)}" %>
-
-<header class="header">
-  <h1>
-    <%= link_to resource.friendly_name.pluralize, resource.index_path %>
-    /
-    <strong>Edit <%= link_to resource.display_name(@record), resource.show_path(@record) %></strong>
-  </h1>
-</header>
-
-<% if resource.form_tabs.any? %>
-  <div class="form-tabs-layout">
-    <%= render partial: "form_tabs_nav", locals: { record: @record, resource: resource } %>
-    <div class="form-tab-content">
-      <% if (current_tab = resource.form_tab_for(params[:tab])) %>
-        <%= render partial: "form_tab", locals: { record: @record, resource: resource, tab: current_tab } %>
-      <% else %>
-        <%= render partial: "form", locals: { record: @record, resource: resource } %>
-      <% end %>
+<% if params[:dialog].present? %>
+  <% frame_id = params[:frame_id].to_s.gsub(/[^a-zA-Z0-9_-]/, "") %>
+  <turbo-frame id="<%= frame_id.presence || "madmin-dialog-frame" %>">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3>Edit <%= resource.display_name(@record) %></h3>
+        <button type="button" class="dialog-close" data-action="click->dialog#close">&times;</button>
+      </div>
+      <%= render partial: "form", locals: { record: @record, resource: resource, dialog: true } %>
     </div>
-  </div>
+  </turbo-frame>
 <% else %>
-  <%= render partial: "form", locals: { record: @record, resource: resource } %>
+  <%= content_for :title, "Edit #{resource.display_name(@record)}" %>
+
+  <header class="header">
+    <h1>
+      <%= link_to resource.friendly_name.pluralize, resource.index_path %>
+      /
+      <strong>Edit <%= link_to resource.display_name(@record), resource.show_path(@record) %></strong>
+    </h1>
+  </header>
+
+  <% if resource.form_tabs.any? %>
+    <div class="form-tabs-layout">
+      <%= render partial: "form_tabs_nav", locals: { record: @record, resource: resource } %>
+      <div class="form-tab-content">
+        <% if (current_tab = resource.form_tab_for(params[:tab])) %>
+          <%= render partial: "form_tab", locals: { record: @record, resource: resource, tab: current_tab } %>
+        <% else %>
+          <%= render partial: "form", locals: { record: @record, resource: resource } %>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <%= render partial: "form", locals: { record: @record, resource: resource } %>
+  <% end %>
 <% end %>

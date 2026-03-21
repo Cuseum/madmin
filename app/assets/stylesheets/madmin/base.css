@@ -142,3 +142,52 @@ a {
     display: none;
   }
 }
+
+/* dialog_has_many native dialog styles */
+dialog {
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  max-width: 48rem;
+  overflow-y: auto;
+  padding: 0;
+  width: 90%;
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.dialog-content {
+  padding: 1.5rem;
+}
+
+.dialog-header {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.dialog-close {
+  background: none;
+  border: none;
+  color: var(--light-text-color);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.25rem;
+
+  &:hover {
+    color: var(--text-color);
+  }
+}

@@ -1,4 +1,4 @@
-<%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: true do |form| %>
+<%= form_with model: [:madmin, record], url: (record.persisted? ? resource.show_path(record) : resource.index_path), local: !local_assigns.fetch(:dialog, false) do |form| %>
   <% if form.object.errors.any? %>
     <div class="alert alert-danger">
       <div class="">There was <%= pluralize form.object.errors.full_messages.count, "error" %> with your submission:</div>

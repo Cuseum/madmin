@@ -32,6 +32,7 @@ module Madmin
     autoload :Float, "madmin/fields/float"
     autoload :HasMany, "madmin/fields/has_many"
     autoload :HasOne, "madmin/fields/has_one"
+    autoload :DialogHasMany, "madmin/fields/dialog_has_many"
     autoload :Integer, "madmin/fields/integer"
     autoload :Json, "madmin/fields/json"
     autoload :NestedHasMany, "madmin/fields/nested_has_many"

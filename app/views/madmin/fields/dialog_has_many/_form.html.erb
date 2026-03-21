@@ -1,0 +1,42 @@
+<% associated_resource = field.associated_resource %>
+<% records = field.value(record) %>
+
+<div class="dialog-has-many" data-controller="dialog">
+  <dialog id="<%= field.dialog_id %>" data-dialog-target="dialog">
+    <turbo-frame id="<%= field.frame_id %>" data-dialog-target="frame">
+      <div class="dialog-content dialog-loading">Loading&hellip;</div>
+    </turbo-frame>
+  </dialog>
+
+  <% if associated_resource && records&.any? %>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <% field.index_attributes.each do |attr| %>
+              <th><%= attr.name.to_s.humanize %></th>
+            <% end %>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% records.each do |assoc_record| %>
+            <tr>
+              <% field.index_attributes.each do |attr| %>
+                <td><%= render partial: attr.field.to_partial_path("index"), locals: { field: attr.field, record: assoc_record, resource: associated_resource } %></td>
+              <% end %>
+              <td>
+                <%= link_to "Edit",
+                      associated_resource.edit_path(assoc_record) + "?dialog=1&frame_id=#{field.frame_id}",
+                      data: {
+                        action: "click->dialog#open",
+                        turbo_frame: field.frame_id
+                      } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

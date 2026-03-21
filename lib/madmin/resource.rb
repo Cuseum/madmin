@@ -379,7 +379,8 @@ module Madmin
           has_one: Fields::HasOne,
           rich_text: Fields::RichText,
           nested_has_many: Fields::NestedHasMany,
-          nested_has_one: Fields::NestedHasOne
+          nested_has_one: Fields::NestedHasOne,
+          dialog_has_many: Fields::DialogHasMany
         }[type]
       end
 
