@@ -36,6 +36,34 @@ class DefaultValueFilter < Madmin::Filters::BaseFilter
   end
 end
 
+class MethodDefaultFilter < Madmin::Filters::BaseFilter
+  def default
+    "pending"
+  end
+
+  def apply(query, value)
+    query.where(admin: value)
+  end
+end
+
+class OptionsFilter < Madmin::Filters::BaseFilter
+  self.options = {"Active" => "active", "Inactive" => "inactive"}
+
+  def apply(query, value)
+    query.where(admin: value)
+  end
+end
+
+class MethodOptionsFilter < Madmin::Filters::BaseFilter
+  def options
+    {"Published" => "published", "Draft" => "draft"}
+  end
+
+  def apply(query, value)
+    query.where(admin: value)
+  end
+end
+
 class NotImplementedFilter < Madmin::Filters::BaseFilter
 end
 
@@ -78,6 +106,37 @@ class FilterTest < ActiveSupport::TestCase
     assert_equal "active", DefaultValueFilter.default
   end
 
+  test "filter default can be overridden as an instance method" do
+    filter = MethodDefaultFilter.new
+    assert_equal "pending", filter.default
+  end
+
+  # --- options ---
+
+  test "filter options is nil by default" do
+    assert_nil SimpleFilter.options
+  end
+
+  test "filter options can be set at the class level" do
+    filter = OptionsFilter.new
+    assert_equal({"Active" => "active", "Inactive" => "inactive"}, filter.options)
+  end
+
+  test "filter options can be overridden as an instance method" do
+    filter = MethodOptionsFilter.new
+    assert_equal({"Published" => "published", "Draft" => "draft"}, filter.options)
+  end
+
+  test "options is not shared between filter subclasses" do
+    assert_nil SimpleFilter.options
+    assert_equal({"Active" => "active", "Inactive" => "inactive"}, OptionsFilter.options)
+  end
+
+  test "instance method options override is isolated from other subclasses" do
+    assert_nil SimpleFilter.new.options
+    assert_equal({"Published" => "published", "Draft" => "draft"}, MethodOptionsFilter.new.options)
+  end
+
   # --- applied_or_default_value ---
 
   test "applied_or_default_value returns nested hash when present in applied_filters" do
@@ -89,6 +148,11 @@ class FilterTest < ActiveSupport::TestCase
   test "applied_or_default_value returns default when filter is absent from applied_filters" do
     filter = DefaultValueFilter.new
     assert_equal "active", filter.applied_or_default_value({})
+  end
+
+  test "applied_or_default_value uses instance method override of default" do
+    filter = MethodDefaultFilter.new
+    assert_equal "pending", filter.applied_or_default_value({})
   end
 
   test "applied_or_default_value returns nil default when not set and filter is absent" do

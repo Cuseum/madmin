@@ -2,6 +2,12 @@ module Madmin
   module Filters
     class BaseFilter
       class_attribute :default, default: nil
+      # Defines the list of selectable options for this filter.
+      # Accepts a hash of { label => value } pairs or an array of values.
+      # Nil means no predefined option list (free-form filter).
+      # Can be set at the class level with `self.options = { ... }` or overridden
+      # as an instance method `def options; { ... }; end` in subclasses.
+      class_attribute :options, default: nil
       # Controls whether the filter is shown in the UI.
       # Set to a callable (proc/lambda) that returns true/false, or a plain boolean.
       # Nil means always visible.
@@ -24,7 +30,7 @@ module Madmin
       # Returns the value currently applied for this filter, falling back to default.
       def applied_or_default_value(applied_filters)
         applied_value = applied_filters[id]
-        applied_value.nil? ? self.class.default : applied_value
+        applied_value.nil? ? default : applied_value
       end
 
       # Override in subclasses to apply the filter to the query.
