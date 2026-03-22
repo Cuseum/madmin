@@ -9,7 +9,7 @@ module Madmin
 
     def applied_filters_count
       return 0 if params[:filters].blank?
-      params[:filters].count { |_, v| v.respond_to?(:values) ? v.values.flatten.any?(&:present?) : v.present? }
+      params[:filters].values.count { |v| v.respond_to?(:values) ? v.values.flatten.any?(&:present?) : v.present? }
     end
 
     # Renders an arbre block proc using Arbre::Context and returns the HTML output.
