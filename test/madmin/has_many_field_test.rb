@@ -13,7 +13,8 @@ class HasManyFieldTest < ActiveSupport::TestCase
   if Gem::Version.new(Pagy::VERSION) >= Gem::Version.new("43.0.0.rc")
     test "paginated_value returns pagy object and records using Pagy::Method" do
       pagy, records = @field.paginated_value(@user, {})
-      assert_instance_of Pagy, pagy
+      # Pagy::Method returns Pagy::Offset (a Pagy subclass), so use assert_kind_of
+      assert_kind_of Pagy, pagy
       assert_respond_to records, :each
     end
 
@@ -29,7 +30,7 @@ class HasManyFieldTest < ActiveSupport::TestCase
 
     test "paginated_value returns pagy object and records using Pagy::Backend" do
       pagy, records = @field.paginated_value(@user, {})
-      assert_instance_of Pagy, pagy
+      assert_kind_of Pagy, pagy
       assert_respond_to records, :each
     end
 
