@@ -1,0 +1,14 @@
+<% current_values = params.dig(:filters, filter.id, "is") || [] %>
+<%
+  # When `filter.url` is set (AJAX mode), pre-selected values from params are rendered
+  # as option elements using the stored value as both value and label, since the label
+  # is not available at render time. TomSelect will replace these with proper labels
+  # once options are loaded from the endpoint.
+  tom_data = { controller: "select" }.merge(filter.url.present? ? { select_url_value: filter.url } : {})
+%>
+<div class="form-group">
+  <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
+  <%= select_tag "filters[#{filter.id}][is][]",
+        options_for_select(filter.options || current_values.map { |v| [v, v] }, current_values),
+        multiple: true, class: "form-input", data: tom_data %>
+</div>

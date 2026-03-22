@@ -20,6 +20,11 @@ module Madmin
 
   module Filters
     autoload :BaseFilter, "madmin/filters/base_filter"
+    autoload :BooleanFilter, "madmin/filters/boolean_filter"
+    autoload :MultipleSelectFilter, "madmin/filters/multiple_select_filter"
+    autoload :MultiTomSelectFilter, "madmin/filters/multi_tom_select_filter"
+    autoload :SelectFilter, "madmin/filters/select_filter"
+    autoload :TextFilter, "madmin/filters/text_filter"
   end
 
   module Fields

@@ -1,0 +1,7 @@
+<% current_values = params.dig(:filters, filter.id, "is") || [] %>
+<div class="form-group">
+  <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
+  <%= select_tag "filters[#{filter.id}][is][]",
+        options_for_select(filter.options || [], current_values),
+        multiple: true, class: "form-input" %>
+</div>

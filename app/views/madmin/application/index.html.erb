@@ -15,6 +15,30 @@
       </svg>
       <% end if params[:q].present? %>
 
+    <% if resource.filters.any? %>
+      <div data-controller="dialog">
+        <button data-action="click->dialog#open" class="btn btn-secondary">Filters</button>
+        <dialog data-dialog-target="dialog" data-action="click->dialog#clickOutside" aria-label="Filters">
+          <%= form_with url: resource.index_path, method: :get do |form| %>
+            <%= hidden_field_tag :q, params[:q] if params[:q].present? %>
+            <%= hidden_field_tag :scope, params[:scope] if params[:scope].present? %>
+            <%= hidden_field_tag :sort, params[:sort] if params[:sort].present? %>
+            <%= hidden_field_tag :direction, params[:direction] if params[:direction].present? %>
+
+            <% resource.filters.each do |filter_class| %>
+              <% filter = filter_class.new %>
+              <%= render partial: filter.to_partial_path, locals: { filter: filter } %>
+            <% end %>
+
+            <div class="form-actions">
+              <%= form.submit "Apply Filters", class: "btn btn-primary" %>
+              <button type="button" data-action="click->dialog#close" class="btn btn-secondary">Cancel</button>
+            </div>
+          <% end %>
+        </dialog>
+      </div>
+    <% end %>
+
     <%= link_to resource.new_path, class: "btn btn-secondary" do %>
       New <%= tag.span resource.friendly_name, class: "hidden md:inline-block" %>
     <% end %>

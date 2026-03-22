@@ -27,6 +27,13 @@ module Madmin
         base_key
       end
 
+      # Returns the path to the form partial used to render this filter's input in the UI.
+      # Defaults to the base_filter partial; override in subclasses to use a custom partial.
+      # Custom partials should live at app/views/madmin/filters/<filter_type>/_form.html.erb.
+      def to_partial_path
+        "/madmin/filters/#{self.class.filter_type}/form"
+      end
+
       # Returns the value currently applied for this filter, falling back to default.
       def applied_or_default_value(applied_filters)
         applied_value = applied_filters[id]
@@ -70,6 +77,14 @@ module Madmin
       # Strips the namespace and "Filter" suffix, then underscores.
       def base_key
         self.class.to_s.demodulize.delete_suffix("Filter").underscore
+      end
+
+      class << self
+        # Returns the filter type name used to locate the form partial.
+        # Override in subclasses to return the appropriate type string.
+        def filter_type
+          "base_filter"
+        end
       end
     end
   end

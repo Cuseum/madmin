@@ -1,0 +1,5 @@
+<% current_value = params.dig(:filters, filter.id, "is")&.first %>
+<div class="form-group">
+  <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
+  <%= text_field_tag "filters[#{filter.id}][is][]", current_value, class: "form-input" %>
+</div>
