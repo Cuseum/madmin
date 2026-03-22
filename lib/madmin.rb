@@ -18,6 +18,10 @@ module Madmin
     require "madmin/arbre/col"
   end
 
+  module Filters
+    autoload :BaseFilter, "madmin/filters/base_filter"
+  end
+
   module Fields
     autoload :Attachment, "madmin/fields/attachment"
     autoload :Attachments, "madmin/fields/attachments"

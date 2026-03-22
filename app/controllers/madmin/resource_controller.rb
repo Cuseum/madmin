@@ -72,6 +72,7 @@ module Madmin
 
     def scoped_resources
       resources = resource.model.send(valid_scope)
+      resources = apply_filters(resources)
       resources = Madmin::Search.new(resources, resource, search_term).run
       resources.reorder(sort_column => sort_direction)
     end
@@ -79,6 +80,17 @@ module Madmin
     def valid_scope
       scope = params.fetch(:scope, "all")
       resource.scopes.include?(scope.to_sym) ? scope : :all
+    end
+
+    def apply_filters(query)
+      filter_instances = resource.filters.map(&:new)
+      permitted_keys = filter_instances.map(&:id)
+      applied_filters = params[:filters].present? ? params[:filters].permit(*permitted_keys).to_h : {}
+      filter_instances.each do |filter|
+        value = filter.applied_or_default_value(applied_filters)
+        query = filter.apply_query(query, value) if value.present?
+      end
+      query
     end
 
     def resource_params

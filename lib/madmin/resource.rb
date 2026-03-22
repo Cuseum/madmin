@@ -73,6 +73,7 @@ module Madmin
 
     class_attribute :attributes, default: ActiveSupport::OrderedHash.new
     class_attribute :member_actions, default: []
+    class_attribute :filters, default: []
     class_attribute :scopes, default: []
     class_attribute :menu_options, instance_reader: false
     class_attribute :index_attributes, default: nil
@@ -89,6 +90,7 @@ module Madmin
       def inherited(base)
         base.attributes = attributes.dup
         base.member_actions = scopes.dup
+        base.filters = []
         base.scopes = scopes.dup
         base.form_tabs = []
         base.form_sections = []
@@ -198,6 +200,10 @@ module Madmin
 
       def scope(name)
         scopes << name
+      end
+
+      def filter(filter_class)
+        filters << filter_class
       end
 
       def get_attribute(name)
