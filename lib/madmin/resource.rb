@@ -89,7 +89,7 @@ module Madmin
     class << self
       def inherited(base)
         base.attributes = attributes.dup
-        base.member_actions = scopes.dup
+        base.member_actions = member_actions.dup
         base.filters = []
         base.scopes = scopes.dup
         base.form_tabs = []

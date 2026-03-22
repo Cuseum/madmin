@@ -28,6 +28,11 @@ module Madmin
 
       # Override in subclasses to apply the filter to the query.
       # Must return the filtered ActiveRecord relation.
+      #
+      # When called from the controller, `value` is a hash of the form:
+      #   { "is" => ["active", "pending"], "gt" => ["100"] }
+      # Each key is a comparator string, and each value is an array of strings.
+      # Use the `values_for` helper to extract values for a specific comparator.
       def apply(query, value)
         raise NotImplementedError, "#{self.class} must implement the `apply` method"
       end
@@ -36,6 +41,20 @@ module Madmin
       # Subclasses should override `apply`, not this method.
       def apply_query(query, value)
         apply(query, value)
+      end
+
+      # Extracts the array of values for the given comparator from `value`.
+      # Accepts both symbol and string comparator keys.
+      #
+      # Example:
+      #   value = { "is" => ["active", "pending"], "is_not" => ["archived"] }
+      #   values_for(value, :is)     # => ["active", "pending"]
+      #   values_for(value, :is_not) # => ["archived"]
+      #   values_for(value, :gt)     # => []
+      def values_for(value, comparator)
+        return [] unless value.is_a?(Hash)
+        key = comparator.to_s
+        Array(value.fetch(key) { value[comparator.to_sym] })
       end
     end
   end

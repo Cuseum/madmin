@@ -83,14 +83,31 @@ module Madmin
     end
 
     def apply_filters(query)
+      return query if resource.filters.empty? || params[:filters].blank?
+
       filter_instances = resource.filters.map(&:new)
-      permitted_keys = filter_instances.map(&:id)
-      applied_filters = params[:filters].present? ? params[:filters].permit(*permitted_keys).to_h : {}
+      applied_filters = build_applied_filters(filter_instances)
       filter_instances.each do |filter|
         value = filter.applied_or_default_value(applied_filters)
         query = filter.apply_query(query, value) if value.present?
       end
       query
+    end
+
+    # Builds a hash of { filter_id => { comparator => [values] } } from
+    # the nested params format: filters[filter_id][comparator][]=value
+    # Only accesses params for registered filter IDs; permits the inner hash
+    # of each known filter to avoid unpermitted-parameter warnings.
+    def build_applied_filters(filter_instances)
+      filter_instances.each_with_object({}) do |filter, result|
+        raw = params[:filters]&.dig(filter.id)
+        next if raw.blank?
+
+        # raw is ActionController::Parameters like { "is" => ["active"] }.
+        # Permit it fully since it's already scoped to a developer-registered filter ID
+        # and the filter's apply method controls how values are used.
+        result[filter.id] = raw.permit!.to_h.transform_values { |v| Array(v) }
+      end
     end
 
     def resource_params
