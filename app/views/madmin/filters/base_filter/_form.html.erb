@@ -1,0 +1,8 @@
+<% current_value = params.dig(:filters, filter.id, "is")&.first %>
+<% if filter.options.present? %>
+  <%= select_tag "filters[#{filter.id}][is][]",
+        options_for_select(filter.options, current_value),
+        prompt: true, class: "form-input" %>
+<% else %>
+  <%= text_field_tag "filters[#{filter.id}][is][]", current_value, class: "form-input" %>
+<% end %>

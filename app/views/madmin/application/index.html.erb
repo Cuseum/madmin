@@ -18,7 +18,27 @@
     <% if resource.filters.any? %>
       <div data-controller="dialog">
         <button data-action="click->dialog#open" class="btn btn-secondary">Filters</button>
-        <dialog data-dialog-target="dialog" aria-label="Filters"></dialog>
+        <dialog data-dialog-target="dialog" aria-label="Filters">
+          <%= form_with url: resource.index_path, method: :get do |form| %>
+            <%= hidden_field_tag :q, params[:q] if params[:q].present? %>
+            <%= hidden_field_tag :scope, params[:scope] if params[:scope].present? %>
+            <%= hidden_field_tag :sort, params[:sort] if params[:sort].present? %>
+            <%= hidden_field_tag :direction, params[:direction] if params[:direction].present? %>
+
+            <% resource.filters.each do |filter_class| %>
+              <% filter = filter_class.new %>
+              <div class="form-group">
+                <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
+                <%= render partial: filter.to_partial_path, locals: { filter: filter } %>
+              </div>
+            <% end %>
+
+            <div class="form-actions">
+              <%= form.submit "Apply Filters", class: "btn btn-primary" %>
+              <button type="button" data-action="click->dialog#close" class="btn btn-secondary">Cancel</button>
+            </div>
+          <% end %>
+        </dialog>
       </div>
     <% end %>
 
