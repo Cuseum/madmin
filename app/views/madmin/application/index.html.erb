@@ -27,10 +27,7 @@
 
             <% resource.filters.each do |filter_class| %>
               <% filter = filter_class.new %>
-              <div class="form-group">
-                <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
-                <%= render partial: filter.to_partial_path, locals: { filter: filter } %>
-              </div>
+              <%= render partial: filter.to_partial_path, locals: { filter: filter } %>
             <% end %>
 
             <div class="form-actions">
