@@ -18,7 +18,7 @@
     <% if resource.filters.any? %>
       <div data-controller="dialog">
         <button data-action="click->dialog#open" class="btn btn-secondary">Filters</button>
-        <dialog data-dialog-target="dialog" aria-label="Filters">
+        <dialog data-dialog-target="dialog" data-action="click->dialog#clickOutside" aria-label="Filters">
           <%= form_with url: resource.index_path, method: :get do |form| %>
             <%= hidden_field_tag :q, params[:q] if params[:q].present? %>
             <%= hidden_field_tag :scope, params[:scope] if params[:scope].present? %>

@@ -10,4 +10,10 @@ export default class extends Controller {
   close() {
     this.dialogTarget.close()
   }
+
+  clickOutside(event) {
+    if (event.target === this.dialogTarget) {
+      this.close()
+    }
+  }
 }
