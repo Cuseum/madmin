@@ -1,0 +1,7 @@
+<% current_value = params.dig(:filters, filter.id, "is")&.first %>
+<div class="form-group">
+  <%= label_tag "filters[#{filter.id}][is][]", filter.name %>
+  <%= select_tag "filters[#{filter.id}][is][]",
+        options_for_select([["Yes", "true"], ["No", "false"]], current_value),
+        prompt: true, class: "form-input" %>
+</div>
