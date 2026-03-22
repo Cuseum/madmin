@@ -48,9 +48,9 @@ end
 class FilterTest < ActiveSupport::TestCase
   # --- id / name ---
 
-  test "filter id is derived from class name" do
+  test "filter id is derived from class name without Filter suffix" do
     filter = NameFilter.new
-    assert_equal "name_filter", filter.id
+    assert_equal "name", filter.id
   end
 
   test "filter name defaults to humanized class name without Filter suffix" do
@@ -82,7 +82,7 @@ class FilterTest < ActiveSupport::TestCase
 
   test "applied_or_default_value returns nested hash when present in applied_filters" do
     filter = NameFilter.new
-    value = {"name_filter" => {"is" => ["Alice"]}}
+    value = {"name" => {"is" => ["Alice"]}}
     assert_equal({"is" => ["Alice"]}, filter.applied_or_default_value(value))
   end
 

@@ -11,13 +11,14 @@ module Madmin
       # Defaults to the class name with "Filter" suffix removed and humanized.
       # Override in subclasses to provide a custom label.
       def name
-        self.class.to_s.demodulize.delete_suffix("Filter").underscore.humanize
+        base_key.humanize
       end
 
       # Unique identifier used as the URL param key for this filter.
-      # Derived from the fully-qualified class name.
+      # Derived from the demodulized class name with the "Filter" suffix removed.
+      # e.g. StatusFilter → "status", MyApp::PublishedFilter → "published"
       def id
-        self.class.to_s.underscore.tr("/", "_")
+        base_key
       end
 
       # Returns the value currently applied for this filter, falling back to default.
@@ -55,6 +56,14 @@ module Madmin
         return [] unless value.is_a?(Hash)
         key = comparator.to_s
         Array(value.fetch(key) { value[comparator.to_sym] })
+      end
+
+      private
+
+      # Shared base used by both `name` and `id`.
+      # Strips the namespace and "Filter" suffix, then underscores.
+      def base_key
+        self.class.to_s.demodulize.delete_suffix("Filter").underscore
       end
     end
   end
