@@ -81,9 +81,10 @@ module Madmin
 
       class << self
         # Returns the filter type name used to locate the form partial.
-        # Defaults to "base_filter"; override in subclasses to match a custom partial directory.
+        # Derived automatically from the class name (e.g. BooleanFilter → "boolean_filter").
+        # Override in subclasses only when the partial directory differs from the class name.
         def filter_type
-          "base_filter"
+          to_s.demodulize.underscore
         end
       end
     end
