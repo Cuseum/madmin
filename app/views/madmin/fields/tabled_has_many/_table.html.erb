@@ -1,0 +1,33 @@
+<% associated_resource = field.associated_resource %>
+<% if field.index_block && associated_resource %>
+  <% if field.uses_arbre? %>
+    <div class="tabled-has-many">
+      <% Array(field.value(record)).each do |assoc_record| %>
+        <div class="tabled-has-many-record">
+          <%= render_arbre_index field.index_block, record: assoc_record, resource: associated_resource %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <% field.index_attribute_objects.each do |attr| %>
+              <th><%= attr.name.to_s.titleize %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% Array(field.value(record)).each do |assoc_record| %>
+            <tr>
+              <% field.index_attribute_objects.each do |attr| %>
+                <td><%= render partial: attr.field.to_partial_path("index"), locals: { field: attr.field, record: assoc_record, resource: associated_resource } %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>

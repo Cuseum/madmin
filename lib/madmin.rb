@@ -50,6 +50,7 @@ module Madmin
     autoload :RichText, "madmin/fields/rich_text"
     autoload :Select, "madmin/fields/select"
     autoload :String, "madmin/fields/string"
+    autoload :TabledHasMany, "madmin/fields/tabled_has_many"
     autoload :Text, "madmin/fields/text"
     autoload :Time, "madmin/fields/time"
   end

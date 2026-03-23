@@ -64,5 +64,27 @@ module Madmin
       ctx.instance_exec(&block)
       ctx.to_s.html_safe
     end
+
+    # Renders an arbre block in an index context: `attribute` calls render index
+    # field partials (not form field partials) for the given record.  Used by the
+    # tabled_has_many field to render each associated record using the developer's
+    # custom index block.
+    def render_arbre_index(block, record:, resource:)
+      view = self
+      ctx = ::Arbre::Context.new({ record: record, resource: resource }, self)
+
+      ctx.define_singleton_method(:attribute) do |attr_name, *_args, **_opts|
+        next unless resource
+        attr = resource.attributes[attr_name]
+        next unless attr&.field&.present?
+        current_arbre_element << view.render(
+          partial: attr.field.to_partial_path("index"),
+          locals: { field: attr.field, record: record, resource: resource }
+        )
+      end
+
+      ctx.instance_exec(&block)
+      ctx.to_s.html_safe
+    end
   end
 end

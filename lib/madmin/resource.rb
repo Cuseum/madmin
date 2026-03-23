@@ -222,7 +222,11 @@ module Madmin
           field = Fields::String
         end
 
-        config = ActiveSupport::OrderedOptions.new.merge(options)
+        config = if field.respond_to?(:build_config)
+          field.build_config(options)
+        else
+          ActiveSupport::OrderedOptions.new.merge(options)
+        end
         yield config if block_given?
 
         # Form is an alias for new & edit
